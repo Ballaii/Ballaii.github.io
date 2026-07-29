@@ -933,6 +933,289 @@ h3 {
     linear-gradient(145deg, rgba(128, 214, 194, 0.12), rgba(12, 18, 30, 0.9));
 }
 
+.steam-page {
+  padding: 30px 0 70px;
+  color: #dfe7ee;
+}
+
+.steam-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 16% 5%, rgba(128, 214, 194, 0.16), transparent 25%),
+    radial-gradient(circle at 82% 7%, rgba(243, 201, 106, 0.11), transparent 28%),
+    linear-gradient(180deg, #172232 0%, #0f1722 34%, #0b1016 100%);
+}
+
+.steam-titlebar {
+  margin-bottom: 18px;
+}
+
+.steam-titlebar h1 {
+  font-size: clamp(2.1rem, 5vw, 4.7rem);
+}
+
+.steam-app {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.72fr);
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid rgba(111, 148, 178, 0.3);
+  border-radius: 6px;
+  background:
+    linear-gradient(115deg, rgba(32, 52, 72, 0.96), rgba(19, 31, 45, 0.94) 52%, rgba(13, 19, 28, 0.98)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.38);
+}
+
+.steam-gallery {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.steam-gallery .video-frame {
+  border-radius: 3px;
+  border-color: rgba(122, 161, 193, 0.35);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+}
+
+.steam-thumb-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.steam-thumb {
+  min-height: 82px;
+  margin: 0;
+  overflow: hidden;
+  border: 2px solid rgba(122, 161, 193, 0.28);
+  border-radius: 3px;
+  background: #0b1016;
+}
+
+.steam-thumb:first-child {
+  border-color: #f3c96a;
+}
+
+.steam-thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.steam-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.steam-capsule {
+  display: grid;
+  place-items: center;
+  min-height: 158px;
+  padding: 18px;
+  overflow: hidden;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(93, 20, 92, 0.62), transparent 38%),
+    linear-gradient(145deg, rgba(64, 22, 62, 0.92), rgba(12, 18, 30, 0.95));
+}
+
+.countdown-capsule {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(240, 78, 92, 0.24), transparent 42%),
+    linear-gradient(145deg, rgba(21, 42, 68, 0.94), rgba(12, 18, 30, 0.95));
+}
+
+.steam-capsule img {
+  width: min(92%, 360px);
+  max-height: 180px;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.45));
+}
+
+.steam-summary p {
+  margin: 0;
+  color: #d7e1eb;
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.steam-review-row,
+.steam-meta div {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+
+.steam-review-row span,
+.steam-meta span {
+  color: #7f93a6;
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.steam-review-row strong {
+  color: #80d6c2;
+  font-size: 0.95rem;
+}
+
+.steam-meta {
+  display: grid;
+  gap: 7px;
+}
+
+.steam-meta strong {
+  color: #dfe7ee;
+  font-size: 0.92rem;
+}
+
+.steam-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.steam-tags span {
+  border-radius: 2px;
+  padding: 6px 8px;
+  color: #b7d9f1;
+  background: rgba(103, 151, 184, 0.24);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.steam-buybox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 22px 0 28px;
+  padding: 16px;
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(15, 24, 34, 0.98), rgba(35, 55, 72, 0.96)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.28);
+}
+
+.steam-buybox h2 {
+  font-size: 1.2rem;
+}
+
+.steam-buybox p {
+  margin: 4px 0 0;
+  color: #9fb1c2;
+}
+
+.steam-buy-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px;
+  border-radius: 3px;
+  background: #05080d;
+}
+
+.steam-buy-actions span {
+  padding: 0 12px;
+  color: #dfe7ee;
+  font-size: 0.9rem;
+}
+
+.steam-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
+  gap: 24px;
+}
+
+.steam-main-column,
+.steam-side-column {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.steam-section,
+.steam-side-panel {
+  padding: 20px;
+  border: 1px solid rgba(111, 148, 178, 0.22);
+  border-radius: 4px;
+  background: rgba(18, 30, 43, 0.72);
+}
+
+.steam-section h2,
+.steam-side-panel h2 {
+  margin-bottom: 12px;
+  color: #f7fafc;
+  font-size: 1.18rem;
+  letter-spacing: 0;
+}
+
+.steam-section p {
+  color: #c5d1dc;
+  line-height: 1.68;
+}
+
+.steam-section .feature-list li {
+  border-color: rgba(111, 148, 178, 0.22);
+  background: rgba(9, 14, 21, 0.38);
+}
+
+.steam-details {
+  margin-top: 0;
+  border-radius: 4px;
+  background: rgba(18, 30, 43, 0.72);
+}
+
+.steam-feature-checks {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.steam-feature-checks li {
+  padding: 9px 10px;
+  border-radius: 3px;
+  color: #dbe5ed;
+  background: rgba(103, 151, 184, 0.16);
+  font-size: 0.9rem;
+}
+
+.requirement-list {
+  display: grid;
+  gap: 8px;
+}
+
+.requirement-list p {
+  margin: 0;
+  color: #b9c6d3;
+  line-height: 1.5;
+}
+
+.compact-quotes {
+  grid-template-columns: 1fr;
+}
+
+.compact-quotes .quote-card {
+  padding: 12px;
+}
+
+.compact-quotes .quote-card p {
+  font-size: 0.9rem;
+}
+
 .skills-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -971,6 +1254,8 @@ h3 {
   .game-hero,
   .store-hero,
   .two-column-section,
+  .steam-app,
+  .steam-content-grid,
   .contact-page {
     grid-template-columns: 1fr;
   }
@@ -1020,6 +1305,23 @@ h3 {
     align-items: stretch;
     display: grid;
   }
+
+  .steam-app {
+    padding: 12px;
+  }
+
+  .steam-summary {
+    order: -1;
+  }
+
+  .steam-buybox {
+    align-items: stretch;
+    display: grid;
+  }
+
+  .steam-buy-actions {
+    justify-content: space-between;
+  }
 }
 
 @media (max-width: 540px) {
@@ -1062,6 +1364,20 @@ h3 {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, minmax(170px, 1fr));
     min-height: auto;
+  }
+
+  .steam-thumb-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .steam-review-row,
+  .steam-meta div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .steam-buy-actions {
+    display: grid;
   }
 
   .tile-1,

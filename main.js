@@ -286,6 +286,27 @@ function videoEmbed(videoId, title) {
     </div>`;
 }
 
+function steamPreviewThumbs(items) {
+  return items
+    .map(
+      (shot) => `
+        <figure class="steam-thumb">
+          <img src="${shot.src}" alt="${shot.alt}" loading="lazy" />
+        </figure>`,
+    )
+    .join("");
+}
+
+function steamMetaRows(items) {
+  return items
+    .map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`)
+    .join("");
+}
+
+function steamTags(items) {
+  return `<div class="steam-tags">${items.map((tag) => `<span>${tag}</span>`).join("")}</div>`;
+}
+
 function setPage(pageId) {
   window.location.hash = pageId;
 }
@@ -632,6 +653,270 @@ function renderCountdown() {
     </main>`;
 }
 
+function renderDivineHarvestSteamDraft() {
+  const systems = divineHarvestSystems
+    .map(
+      (system) => `
+        <article class="tech-note">
+          <h2>${system.title}</h2>
+          <p>${system.text}</p>
+        </article>`,
+    )
+    .join("");
+
+  return `
+    <main>
+      <section class="steam-page divine-theme">
+        <div class="steam-titlebar">
+          <p class="eyebrow">Game page draft</p>
+          <h1>Divine Harvest</h1>
+        </div>
+
+        <section class="steam-app">
+          <div class="steam-gallery">
+            ${videoEmbed("65rzQu2B-PM", "Divine Harvest trailer")}
+            <div class="steam-thumb-strip">${steamPreviewThumbs(divineScreenshots)}</div>
+          </div>
+
+          <aside class="steam-summary">
+            <div class="steam-capsule">
+              <img src="assets/project-divine-harvest.webp" alt="Divine Harvest logo" />
+            </div>
+            <p>
+              Explore a dark pixel-art world, unlock movement abilities, fight hand-built bosses,
+              and uncover two endings in a solo-developed Unity Metroidvania.
+            </p>
+            <div class="steam-review-row">
+              <span>Reception</span>
+              <strong>Released thesis project</strong>
+            </div>
+            <div class="steam-meta">
+              ${steamMetaRows([
+                ["Release", "Available now"],
+                ["Developer", "Ballai Fokt Jeno"],
+                ["Platform", "Windows"],
+                ["Package", "395 MB"],
+              ])}
+            </div>
+            ${steamTags(["Metroidvania", "Pixel Art", "Boss Fights", "Singleplayer", "Short", "Controller"])}
+          </aside>
+        </section>
+
+        <section class="steam-buybox">
+          <div>
+            <h2>Play Divine Harvest</h2>
+            <p>Name your own price on itch.io.</p>
+          </div>
+          <div class="steam-buy-actions">
+            <span>Windows download</span>
+            <a class="primary-action" href="https://ballaii.itch.io/divine-harvest" target="_blank" rel="noopener">
+              Open itch.io
+            </a>
+          </div>
+        </section>
+
+        <section class="steam-content-grid">
+          <div class="steam-main-column">
+            <section class="steam-section">
+              <h2>About This Game</h2>
+              <p>
+                Divine Harvest is a compact Metroidvania built around exploration, ability-gated
+                progression, boss encounters, and a branching ending structure. It is designed as a
+                complete solo project rather than a prototype: you move through connected areas,
+                collect upgrades, return to previously blocked routes, and push toward the final
+                outcome of the world.
+              </p>
+            </section>
+            <section class="steam-section">
+              <h2>Game Features</h2>
+              ${featureList(divineHarvestFeatures)}
+            </section>
+            <section class="steam-section">
+              <h2>Screenshots</h2>
+              <div class="screenshot-collage" aria-label="Divine Harvest screenshots">
+                ${screenshotGrid(divineScreenshots)}
+              </div>
+            </section>
+            <details class="tech-details steam-details">
+              <summary>Technical details</summary>
+              <div class="tech-details-body">
+                <p>
+                  Divine Harvest was also my bachelor's thesis project. The thesis documents the
+                  architecture behind a Unity Metroidvania with persistent world state, scene
+                  transitions, boss AI, input abstraction, secure saves, and branching narrative.
+                </p>
+                <div class="feature-grid systems-grid">${systems}</div>
+              </div>
+            </details>
+          </div>
+
+          <aside class="steam-side-column">
+            <section class="steam-side-panel">
+              <h2>Features</h2>
+              <ul class="steam-feature-checks">
+                <li>Single-player</li>
+                <li>Controller movement support</li>
+                <li>Multiple endings</li>
+                <li>Secure save system</li>
+              </ul>
+            </section>
+            <section class="steam-side-panel">
+              <h2>System Requirements</h2>
+              <div class="requirement-list">
+                <p><strong>OS:</strong> Windows</p>
+                <p><strong>Build:</strong> Downloadable itch.io package</p>
+                <p><strong>Storage:</strong> 395 MB package</p>
+              </div>
+            </section>
+          </aside>
+        </section>
+      </section>
+    </main>`;
+}
+
+function renderCountdownSteamDraft() {
+  const praise = countdownPraise
+    .map(
+      (item) => `
+        <article class="quote-card">
+          <p>"${item.text}"</p>
+          <span>${item.author}</span>
+        </article>`,
+    )
+    .join("");
+
+  return `
+    <main>
+      <section class="steam-page countdown-theme">
+        <div class="steam-titlebar">
+          <p class="eyebrow">Game page draft</p>
+          <h1>CountDown - Beat the Clock</h1>
+        </div>
+
+        <section class="steam-app">
+          <div class="steam-gallery">
+            ${videoEmbed("HKM7NeKsCu8", "CountDown - Beat the Clock trailer")}
+            <div class="steam-thumb-strip">${steamPreviewThumbs(countdownScreenshots)}</div>
+          </div>
+
+          <aside class="steam-summary">
+            <div class="steam-capsule countdown-capsule">
+              <img src="assets/countdown-cover.webp" alt="CountDown - Beat the Clock cover" />
+            </div>
+            <p>
+              A reverse-progression arena survivor: start powerful, lose power as the run
+              escalates, and fight to buy back enough time to stay alive.
+            </p>
+            <div class="steam-review-row">
+              <span>Jam feedback</span>
+              <strong>Positive early comments</strong>
+            </div>
+            <div class="steam-meta">
+              ${steamMetaRows([
+                ["Release", "25 Jul, 2026"],
+                ["Developer", "Ballai Fokt Jeno"],
+                ["Platforms", "Browser, Windows, Linux"],
+                ["Event", "GMTK Game Jam 2026"],
+              ])}
+            </div>
+            ${steamTags(["Arena Shooter", "Bullet Hell", "Roguelike", "Leaderboard", "Pixel Art", "Singleplayer"])}
+          </aside>
+        </section>
+
+        <section class="steam-buybox">
+          <div>
+            <h2>Play CountDown - Beat the Clock</h2>
+            <p>Playable in browser, with Windows and Linux downloads.</p>
+          </div>
+          <div class="steam-buy-actions">
+            <span>Free / itch.io</span>
+            <a class="primary-action" href="https://ballaii.itch.io/countdown" target="_blank" rel="noopener">
+              Play now
+            </a>
+          </div>
+        </section>
+
+        <section class="steam-content-grid">
+          <div class="steam-main-column">
+            <section class="steam-section">
+              <h2>About This Game</h2>
+              <p>
+                CountDown flips the usual survivor formula. Kills and XP do not simply make you
+                stronger: they push the run toward level-down events, stripping comfort away while
+                waves and bosses keep pressuring the arena. The result is a jam-sized game with one
+                sharp hook: survive while your build counts down.
+              </p>
+            </section>
+            <section class="steam-section">
+              <h2>Game Features</h2>
+              ${featureList(countdownFeatures)}
+            </section>
+            <section class="steam-section">
+              <h2>Screenshots</h2>
+              <div class="countdown-gallery">
+                ${screenshotGrid(countdownScreenshots, "countdown-shot")}
+              </div>
+            </section>
+            <details class="tech-details steam-details">
+              <summary>Technical details</summary>
+              <div class="tech-details-body">
+                <p>
+                  CountDown was designed around a reverse-progression run loop: kills and XP push
+                  the player toward level-down events instead of upgrades. The systems that matter
+                  most are run state, ability tier stripping, time pickups, refunds, draft choices,
+                  leaderboard naming, and wave/boss pacing.
+                </p>
+                <div class="feature-grid systems-grid">
+                  <article class="tech-note">
+                    <h2>Reverse Progression</h2>
+                    <p>
+                      The core pressure comes from losing power over time. The player begins strong,
+                      so the design challenge is keeping later fights readable when the build is thinner.
+                    </p>
+                  </article>
+                  <article class="tech-note">
+                    <h2>Run Economy</h2>
+                    <p>
+                      Time orbs and XP refunds create short-term decisions: keep fighting, recover a
+                      few seconds, or accept a risky contract, boon, or curse.
+                    </p>
+                  </article>
+                  <article class="tech-note">
+                    <h2>Jam Scope</h2>
+                    <p>
+                      The public page positions the game as a GMTK 2026 submission made under jam
+                      constraints, so the implementation emphasizes a strong central mechanic over
+                      long-form content.
+                    </p>
+                  </article>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <aside class="steam-side-column">
+            <section class="steam-side-panel">
+              <h2>Features</h2>
+              <ul class="steam-feature-checks">
+                <li>Single-player</li>
+                <li>Browser playable</li>
+                <li>Leaderboard</li>
+                <li>No generative AI used</li>
+              </ul>
+            </section>
+            <section class="steam-side-panel">
+              <h2>Early Comments</h2>
+              <div class="quote-grid compact-quotes">${praise}</div>
+              <a class="inline-source" href="https://itch.io/jam/gmtk-jam-2026/rate/4816977" target="_blank" rel="noopener">
+                View GMTK submission
+              </a>
+            </section>
+          </aside>
+        </section>
+      </section>
+    </main>`;
+}
+
 function renderSkills() {
   const groups = skillGroups
     .map(
@@ -683,8 +968,8 @@ function renderPage() {
   const pageContent = {
     home: renderHome,
     projects: renderProjects,
-    "divine-harvest": renderDivineHarvest,
-    countdown: renderCountdown,
+    "divine-harvest": renderDivineHarvestSteamDraft,
+    countdown: renderCountdownSteamDraft,
     skills: renderSkills,
     contact: renderContact,
   };
