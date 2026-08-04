@@ -2,7 +2,7 @@ const pages = [
   { id: "home", label: "Home" },
   { id: "projects", label: "Projects" },
   { id: "divine-harvest", label: "Divine Harvest" },
-  { id: "countdown", label: "CountDown" },
+  { id: "countdown", label: "Second's Thief" },
   { id: "skills", label: "Skills" },
   { id: "contact", label: "Contact" },
 ];
@@ -11,9 +11,9 @@ const projects = [
   {
     id: "divine-harvest",
     name: "Divine Harvest",
-    type: "Bachelor's thesis / released game",
+    type: "Released Unity Metroidvania / bachelor's thesis",
     summary:
-      "A solo-developed Unity 2D Metroidvania with 20 interconnected areas, 100+ scenes, 15 boss encounters, branching narrative, secure saves, and controller support.",
+      "An indie Unity Metroidvania finished and released on April 19, 2026, with at least 2 hours of content.",
     stack: ["Unity", "C#", "Behavior graphs", "AES/HMAC saves", "ScriptableObjects"],
     accent: "harvest",
     image: "assets/project-divine-harvest.webp",
@@ -22,15 +22,15 @@ const projects = [
   },
   {
     id: "countdown",
-    name: "CountDown - Beat the Clock",
-    type: "GMTK Game Jam 2026 / released game",
+    name: "Second's Thief",
+    type: "Ongoing game project / GMTK prototype",
     summary:
-      "A reverse-progression arena survivor where kills push you closer to losing abilities. Built for GMTK 2026 and released for browser, Windows, and Linux.",
+      "An ongoing arena-survivor project evolving from a GMTK prototype, built around reverse progression, time pressure, bosses, and leaderboard-driven runs.",
     stack: ["Game jam", "Arena shooter", "Reverse progression", "Leaderboard", "HTML5"],
     accent: "countdown",
     image: "assets/countdown-cover.webp",
-    imageTitle: "CountDown - Beat the Clock",
-    imageAlt: "CountDown - Beat the Clock game cover",
+    imageTitle: "Second's Thief",
+    imageAlt: "Second's Thief game cover",
   },
   {
     id: "malware-ai",
@@ -84,6 +84,15 @@ const projects = [
 
 const timeline = [
   {
+    title: "B.Sc. Information Technology Completed",
+    place: "UMFST George Emil Palade",
+    date: "July 22, 2026",
+    points: [
+      "Completed university with Divine Harvest as a game-development focused bachelor's thesis.",
+      "Documented the Unity architecture, gameplay systems, boss AI, save security, and narrative systems behind the released build.",
+    ],
+  },
+  {
     title: "Automation Developer Intern",
     place: "Accenture",
     date: "Summer 2025",
@@ -107,12 +116,12 @@ const timeline = [
 
 const skillGroups = [
   {
-    name: "Engineering",
-    items: ["C#", "Python", "C", "C++", "Java", "Dart", "SQL", "Git"],
+    name: "Game Development",
+    items: ["Unity", "C#", "Gameplay systems", "Boss AI", "Level design", "Input systems", "UI"],
   },
   {
-    name: "Game Development",
-    items: ["Unity", "Gameplay systems", "Boss AI", "Level design", "Input systems", "UI"],
+    name: "Engineering",
+    items: ["Python", "C", "C++", "Java", "Dart", "SQL", "Git"],
   },
   {
     name: "AI and Security",
@@ -125,8 +134,8 @@ const skillGroups = [
 ];
 
 const divineHarvestStats = [
+  ["Apr 19, 2026", "released"],
   ["Windows", "download"],
-  ["Name your price", "itch.io release"],
   ["Metroidvania", "genre"],
   ["Controller", "movement support"],
 ];
@@ -335,7 +344,6 @@ function renderHeader(activePage) {
   return `
     <header class="site-header">
       <a class="brand" href="#home" aria-label="Go to homepage">
-        <img src="character.png" alt="" class="brand-mark" />
         <span>Ballai Fokt Jeno</span>
       </a>
       <nav class="tabs" aria-label="Portfolio sections">${tabs}</nav>
@@ -361,47 +369,27 @@ function renderHome() {
     <main>
       <section class="page-grid hero-page">
         <div class="hero-copy">
-          <p class="eyebrow">Software developer / game developer</p>
-          <h1>Released games, practical systems, and focused tools.</h1>
-          <p class="lead">
-            I make playable projects and document the engineering behind them. My work includes a
-            released Unity Metroidvania, a GMTK jam arena survivor, SCADA simulation, a Flutter
-            fitness app, OpenGL rendering, and AI malware detection.
-          </p>
+          <p class="eyebrow">Game developer / software engineer</p>
+          <h1>I love making games, or stuff which is useful in any convenient way our lives need in case.</h1>
           <div class="hero-actions">
             <button type="button" class="primary-action" onclick="setPage('divine-harvest')">
               Play Divine Harvest
             </button>
             <button type="button" class="secondary-action" onclick="setPage('countdown')">
-              Play CountDown
+              View Second's Thief
             </button>
           </div>
         </div>
 
         <div class="portrait-panel" aria-label="Profile portrait">
           <img src="assets/profile-hero.jpg" alt="Portrait of Ballai Fokt Jeno" class="portrait" />
-          <div class="signal-card">
-            <span class="signal-value">2026</span>
-            <span>Information Technology, UMFST</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="content-band compact-band">
-        <div class="metric-strip">
-          ${metricList([
-            ["2", "released games"],
-            ["Unity", "main engine"],
-            ["SCADA", "internship work"],
-            ["OpenGL", "rendering project"],
-          ])}
         </div>
       </section>
 
       <section class="content-band">
         <div class="section-heading">
           <p class="eyebrow">Experience</p>
-          <h2>Work that shipped, simulated, or taught me something concrete.</h2>
+          <h2>Game development first, with practical engineering around it.</h2>
         </div>
         <div class="timeline">${experience}</div>
       </section>
@@ -415,13 +403,11 @@ function renderProjects() {
         <article class="project-card ${project.accent}">
           <div class="project-graphic">
             <img src="${project.image}" alt="${project.imageAlt}" loading="lazy" />
-            <span class="project-image-title">${project.imageTitle}</span>
           </div>
           <div class="project-copy">
             <p class="project-type">${project.type}</p>
             <h2>${project.name}</h2>
             <p>${project.summary}</p>
-            ${chipList(project.stack)}
             ${
               ["divine-harvest", "countdown"].includes(project.id)
                 ? `<button type="button" class="inline-link" onclick="setPage('${project.id}')">Open game page</button>`
@@ -436,11 +422,7 @@ function renderProjects() {
     <main>
       <section class="content-band">
         <div class="section-heading wide">
-          <p class="eyebrow">Selected work</p>
-          <h1>Projects with distinct technical stories.</h1>
-          <p class="lead">
-            Games first, then the supporting software work: automation, mobile, graphics, and AI.
-          </p>
+          <h1>Projects</h1>
         </div>
         <div class="project-grid">${cards}</div>
       </section>
@@ -668,7 +650,6 @@ function renderDivineHarvestSteamDraft() {
     <main>
       <section class="steam-page divine-theme">
         <div class="steam-titlebar">
-          <p class="eyebrow">Game page draft</p>
           <h1>Divine Harvest</h1>
         </div>
 
@@ -789,34 +770,33 @@ function renderCountdownSteamDraft() {
     <main>
       <section class="steam-page countdown-theme">
         <div class="steam-titlebar">
-          <p class="eyebrow">Game page draft</p>
-          <h1>CountDown - Beat the Clock</h1>
+          <h1>Second's Thief</h1>
         </div>
 
         <section class="steam-app">
           <div class="steam-gallery">
-            ${videoEmbed("HKM7NeKsCu8", "CountDown - Beat the Clock trailer")}
+            ${videoEmbed("HKM7NeKsCu8", "Second's Thief trailer")}
             <div class="steam-thumb-strip">${steamPreviewThumbs(countdownScreenshots)}</div>
           </div>
 
           <aside class="steam-summary">
             <div class="steam-capsule countdown-capsule">
-              <img src="assets/countdown-cover.webp" alt="CountDown - Beat the Clock cover" />
+              <img src="assets/countdown-cover.webp" alt="Second's Thief cover" />
             </div>
             <p>
               A reverse-progression arena survivor: start powerful, lose power as the run
               escalates, and fight to buy back enough time to stay alive.
             </p>
             <div class="steam-review-row">
-              <span>Jam feedback</span>
-              <strong>Positive early comments</strong>
+              <span>Status</span>
+              <strong>Ongoing project</strong>
             </div>
             <div class="steam-meta">
               ${steamMetaRows([
-                ["Release", "25 Jul, 2026"],
+                ["Status", "In development"],
                 ["Developer", "Ballai Fokt Jeno"],
                 ["Platforms", "Browser, Windows, Linux"],
-                ["Event", "GMTK Game Jam 2026"],
+                ["Origin", "GMTK Game Jam 2026"],
               ])}
             </div>
             ${steamTags(["Arena Shooter", "Bullet Hell", "Roguelike", "Leaderboard", "Pixel Art", "Singleplayer"])}
@@ -825,11 +805,11 @@ function renderCountdownSteamDraft() {
 
         <section class="steam-buybox">
           <div>
-            <h2>Play CountDown - Beat the Clock</h2>
-            <p>Playable in browser, with Windows and Linux downloads.</p>
+            <h2>Second's Thief</h2>
+            <p>Ongoing project, playable from the current itch.io build.</p>
           </div>
           <div class="steam-buy-actions">
-            <span>Free / itch.io</span>
+            <span>In development</span>
             <a class="primary-action" href="https://ballaii.itch.io/countdown" target="_blank" rel="noopener">
               Play now
             </a>
@@ -841,10 +821,10 @@ function renderCountdownSteamDraft() {
             <section class="steam-section">
               <h2>About This Game</h2>
               <p>
-                CountDown flips the usual survivor formula. Kills and XP do not simply make you
-                stronger: they push the run toward level-down events, stripping comfort away while
-                waves and bosses keep pressuring the arena. The result is a jam-sized game with one
-                sharp hook: survive while your build counts down.
+                Second's Thief evolves the GMTK prototype into a sharper arena-survivor project.
+                Kills and XP do not simply make you stronger: they push the run toward level-down
+                events, stripping comfort away while waves and bosses keep pressuring the arena.
+                The hook is direct: survive while your build counts down.
               </p>
             </section>
             <section class="steam-section">
@@ -861,10 +841,10 @@ function renderCountdownSteamDraft() {
               <summary>Technical details</summary>
               <div class="tech-details-body">
                 <p>
-                  CountDown was designed around a reverse-progression run loop: kills and XP push
-                  the player toward level-down events instead of upgrades. The systems that matter
-                  most are run state, ability tier stripping, time pickups, refunds, draft choices,
-                  leaderboard naming, and wave/boss pacing.
+                  Second's Thief is designed around a reverse-progression run loop: kills and XP
+                  push the player toward level-down events instead of upgrades. The systems that
+                  matter most are run state, ability tier stripping, time pickups, refunds, draft
+                  choices, leaderboard naming, and wave/boss pacing.
                 </p>
                 <div class="feature-grid systems-grid">
                   <article class="tech-note">
@@ -933,7 +913,6 @@ function renderSkills() {
       <section class="content-band">
         <div class="section-heading wide">
           <p class="eyebrow">Capabilities</p>
-          <h1>Technical range with a bias toward building.</h1>
         </div>
         <div class="skills-grid">${groups}</div>
       </section>
@@ -947,10 +926,6 @@ function renderContact() {
         <div>
           <p class="eyebrow">Contact</p>
           <h1>Let us build something useful.</h1>
-          <p class="lead">
-            I am open to internships, collaborations, and technical conversations around games,
-            web apps, automation, and AI security.
-          </p>
         </div>
         <div class="contact-panel">
           <a href="mailto:ballaifoktjeno@gmail.com">ballaifoktjeno@gmail.com</a>

@@ -70,14 +70,6 @@ main {
   text-decoration: none;
 }
 
-.brand-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
 .tabs {
   display: flex;
   align-items: center;
@@ -228,23 +220,6 @@ h3 {
   filter: saturate(1.04) contrast(1.04);
 }
 
-.signal-card {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
-  padding: 14px;
-  color: #f9fbfd;
-  background: rgba(11, 16, 22, 0.72);
-  backdrop-filter: blur(16px);
-}
-
-.signal-value,
 .stat {
   display: block;
   color: #f3c96a;
@@ -333,12 +308,14 @@ h3 {
 }
 
 .project-card {
-  min-height: 560px;
+  min-height: 430px;
   overflow: hidden;
 }
 
 .project-graphic {
   position: relative;
+  display: grid;
+  place-items: center;
   height: 210px;
   overflow: hidden;
   background: #17202a;
@@ -349,30 +326,8 @@ h3 {
   height: 100%;
   display: block;
   object-fit: contain;
+  object-position: center;
   padding: 18px;
-}
-
-.project-graphic span {
-  position: absolute;
-  display: block;
-}
-
-.project-card .project-graphic .project-image-title {
-  inset: auto 12px 12px 12px !important;
-  width: auto !important;
-  height: auto !important;
-  min-height: 34px;
-  transform: none !important;
-  clip-path: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  border-radius: 8px !important;
-  padding: 7px 10px;
-  color: #f7fafc;
-  background: rgba(11, 16, 22, 0.74) !important;
-  backdrop-filter: blur(12px);
-  font-size: 0.86rem;
-  font-weight: 800;
-  line-height: 1.2;
 }
 
 .project-card.harvest .project-graphic {
