@@ -1,3 +1,5 @@
+import { productPageMeta, productRouteIds, storeCatalogItems } from "./storeData.js";
+
 export const pages = [
   { id: "home", label: "Home" },
   { id: "projects", label: "Projects" },
@@ -6,7 +8,7 @@ export const pages = [
   { id: "contact", label: "Contact" },
 ];
 
-export const routeIds = [...pages.map((page) => page.id), "divine-harvest", "countdown"];
+export const routeIds = [...pages.map((page) => page.id), "divine-harvest", "countdown", ...productRouteIds];
 
 export const pageMeta = {
   home: {
@@ -44,6 +46,7 @@ export const pageMeta = {
     description:
       "Contact Ballai Fokt Jeno for game development, software engineering, web, automation, and AI security work.",
   },
+  ...productPageMeta,
 };
 
 export const storeItems = [
@@ -69,71 +72,7 @@ export const storeItems = [
     tags: ["Browser", "Windows", "Linux"],
     pageId: "countdown",
   },
-  {
-    title: "Pixel Art Scythe UI Frame",
-    category: "assets",
-    kind: "Game asset",
-    price: "$1 or more",
-    image: "assets/scythe-ui.gif",
-    imageAlt: "Animated pixel art scythe UI frame asset",
-    text:
-      "A prototype scythe-themed UI frame with idle eye movement, intended for focus, blood, souls, or overflow meter systems.",
-    tags: ["Aseprite", "PNG", "No generative AI"],
-    url: "https://ballaii.itch.io/scythe-ui",
-    actionLabel: "Open itch.io",
-  },
-  {
-    title: "Ballai Basic Interaction System",
-    category: "assets",
-    kind: "Unity Asset Store placeholder",
-    price: "$6.99",
-    image: "assets/asset-interaction-system.webp",
-    imageAlt: "Ballai Basic Interaction System asset logo",
-    text: "Reusable interaction tools for NPCs, inspectable objects, signs, doors, levers, and other in-world triggers.",
-    tags: ["Unity", "Interaction", "2D"],
-    url: "https://assetstore.unity.com/",
-    actionLabel: "Unity page soon",
-  },
-  {
-    title: "Ballai Input and Tutorial Framework",
-    category: "assets",
-    kind: "Unity Asset Store placeholder",
-    price: "$12.49",
-    originalPrice: "$24.99",
-    discount: "50% off",
-    image: "assets/asset-input-tutorial.webp",
-    imageAlt: "Ballai Input and Tutorial Framework asset logo",
-    text: "A Unity Input System framework for rebinding, device-aware control icons, and reusable tutorial popups.",
-    tags: ["Unity", "Input", "Tutorials"],
-    url: "https://assetstore.unity.com/",
-    actionLabel: "Unity page soon",
-  },
-  {
-    title: "Ballai Save System",
-    category: "assets",
-    kind: "Unity Asset Store placeholder",
-    price: "$10.50",
-    originalPrice: "$15.00",
-    discount: "30% off",
-    image: "assets/asset-save-system.webp",
-    imageAlt: "Ballai Save System asset logo",
-    text: "A modular save framework for slots, metadata, serialization, storage, and registered saveable objects.",
-    tags: ["Unity", "Saves", "Tools"],
-    url: "https://assetstore.unity.com/",
-    actionLabel: "Unity page soon",
-  },
-  {
-    title: "Ballai Scene Transition and Checkpoint System",
-    category: "assets",
-    kind: "Unity Asset Store placeholder",
-    price: "$9.99",
-    image: "assets/asset-scene-system.webp",
-    imageAlt: "Ballai Scene Transition and Checkpoint System asset logo",
-    text: "Reusable scene transitions, entry points, checkpoints, respawning, and screen fading with optional save integration.",
-    tags: ["Unity", "Scenes", "Checkpoints"],
-    url: "https://assetstore.unity.com/",
-    actionLabel: "Unity page soon",
-  },
+  ...storeCatalogItems,
 ];
 
 export const projects = [

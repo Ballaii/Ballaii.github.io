@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-27T16:30:00+03:00",
+  "title": "Design System: Ballai.dev",
+  "extensions": {
+    "colorMeta": {
+      "accent-gold": {
+        "role": "primary",
+        "displayName": "Signal Gold",
+        "canonical": "#e7c06a",
+        "tonalRamp": ["#2b210e", "#4a3819", "#6b5226", "#8d6d34", "#b18c48", "#d5ad5c", "#efd080", "#fff2c5"]
+      },
+      "ground-black": {
+        "role": "neutral",
+        "displayName": "Workshop Ground",
+        "canonical": "#080b0f",
+        "tonalRamp": ["#050608", "#080b0f", "#111820", "#26313c", "#4b5864", "#7f8b96", "#bec5cc", "#f1f3f5"]
+      },
+      "surface-deep": {
+        "role": "neutral",
+        "displayName": "Deep Surface",
+        "canonical": "#10151b",
+        "tonalRamp": ["#07090c", "#10151b", "#1c252e", "#34414d", "#596775", "#8995a1", "#c3c9cf", "#f3f5f7"]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "Primary reading text and controls."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Compact metadata and product states."
+      }
+    },
+    "shadows": [
+      {
+        "name": "navigation-ambient",
+        "value": "0 14px 42px rgba(0, 0, 0, 0.18)",
+        "purpose": "Separates the sticky navigation shell from page content."
+      },
+      {
+        "name": "action-lift",
+        "value": "0 12px 28px rgba(231, 192, 106, 0.18)",
+        "purpose": "Supports available purchase actions on hover."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "160ms ease",
+        "purpose": "Hover, focus, border, and color transitions."
+      },
+      {
+        "name": "page-arrive",
+        "value": "520ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Single page-level arrival moment."
+      }
+    ],
+    "breakpoints": [
+      { "name": "stack", "value": "920px" },
+      { "name": "mobile", "value": "560px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary internal and marketplace action.",
+      "html": "<button class=\"ds-btn-primary\">View product</button>",
+      "css": ".ds-btn-primary { min-height: 42px; border: 1px solid var(--accent); border-radius: 999px; padding: 10px 16px; color: var(--accent-ink); background: var(--accent); font-weight: 820; transition: transform 160ms ease, box-shadow 160ms ease; } .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(231, 192, 106, 0.18); } .ds-btn-primary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }"
+    },
+    {
+      "name": "Store Search",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Dark search field with a gold focus state.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search store\" />",
+      "css": ".ds-input { min-height: 46px; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--text); background: rgba(16, 21, 27, 0.92); } .ds-input:focus { border-color: rgba(231, 192, 106, 0.62); outline: none; box-shadow: 0 0 0 3px rgba(231, 192, 106, 0.12); }"
+    },
+    {
+      "name": "Product Label",
+      "kind": "chip",
+      "description": "Compact launch, featured, and sale label.",
+      "html": "<span class=\"ds-label\">FEATURED</span>",
+      "css": ".ds-label { display: inline-flex; border: 1px solid rgba(231, 192, 106, 0.32); border-radius: 999px; padding: 5px 8px; color: var(--accent); background: rgba(231, 192, 106, 0.08); font-size: 0.7rem; font-weight: 850; }"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Media-led store product card.",
+      "html": "<article class=\"ds-card\"><strong>Ballai Save System</strong><p>Modular persistence for Unity projects.</p></article>",
+      "css": ".ds-card { border: 1px solid var(--line); border-radius: 16px; padding: 22px; color: var(--text); background: var(--surface); } .ds-card p { color: var(--muted); line-height: 1.65; } .ds-card:focus-within { border-color: rgba(231, 192, 106, 0.62); }"
+    },
+    {
+      "name": "Purchase Channel",
+      "kind": "custom",
+      "description": "Marketplace availability row with honest disabled state.",
+      "html": "<button class=\"ds-channel\" disabled><span>Unity Asset Store</span><small>Pending review</small></button>",
+      "css": ".ds-channel { display: flex; justify-content: space-between; width: 100%; min-height: 48px; border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; color: var(--muted); background: rgba(255,255,255,0.025); } .ds-channel:disabled { cursor: not-allowed; opacity: 0.66; } .ds-channel:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Focused Workshop",
+    "overview": "Ballai.dev presents games, tools, and engineering work in a quiet dark environment where the work itself carries the visual weight. Real screenshots and product media lead, while navigation, pricing, and status controls remain compact and predictable. The system is dense enough for repeated browsing but avoids dashboard chrome. Gold appears as a precise signal for active, selected, purchasable, or important states.",
+    "keyCharacteristics": [
+      "Near-black ground with cool layered surfaces.",
+      "Real product media before supporting explanation.",
+      "Restrained gold signals and bright neutral typography.",
+      "Compact controls, semantic states, and responsive stacked layouts."
+    ],
+    "rules": [
+      { "name": "The Gold Signal Rule", "body": "Gold marks active navigation, price, focus, and primary action. It never becomes a full-page field color.", "section": "colors" },
+      { "name": "The Plain Language Rule", "body": "Typography communicates hierarchy through scale and weight, never gradient text or decorative effects.", "section": "typography" },
+      { "name": "The Evidence First Rule", "body": "Product media gets the widest column and appears before supporting copy on desktop and mobile.", "section": "layout" },
+      { "name": "The Flat Surface Rule", "body": "Resting panels rely on tonal separation and a one-pixel border. Shadows are reserved for navigation and interactive lift.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do lead product pages with real screenshots and descriptive alt text.",
+      "Do keep unavailable commerce channels visibly disabled and semantically noninteractive.",
+      "Do reserve gold for active, selected, priced, focused, or purchasable states.",
+      "Do stack media before summary content on narrow screens."
+    ],
+    "donts": [
+      "Don't invent technical claims, sales evidence, or marketplace availability.",
+      "Don't use unrelated artwork to fill a gallery.",
+      "Don't introduce decorative gradients, nested cards, or oversized marketing copy.",
+      "Don't make disabled marketplace controls look clickable."
+    ]
+  }
+}

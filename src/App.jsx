@@ -10,6 +10,8 @@ import {
   storeItems,
   timeline,
 } from "./data.js";
+import { assetProducts } from "./storeData.js";
+import { formatCurrency, formatPromotionEnd, getProductLabels, getProductPricing } from "./storeUtils.js";
 
 function currentPageId() {
   const hash = window.location.hash.replace("#", "");
@@ -57,17 +59,24 @@ function setPropertyMeta(property, content) {
 function usePageSeo(pageId) {
   useEffect(() => {
     const meta = pageMeta[pageId] ?? pageMeta.home;
+    const pageUrl = pageId === "home" ? "https://ballaii.github.io/" : `https://ballaii.github.io/#${pageId}`;
+    const socialImage = meta.image ?? "https://ballaii.github.io/assets/project-divine-harvest.webp";
     document.title = meta.title;
     setMeta("description", meta.description);
     setMeta("twitter:title", meta.title);
     setMeta("twitter:description", meta.description);
+    setMeta("twitter:image", socialImage);
     setPropertyMeta("og:title", meta.title);
     setPropertyMeta("og:description", meta.description);
-    setPropertyMeta("og:url", `https://ballaii.github.io/#${pageId}`);
+    setPropertyMeta("og:url", pageUrl);
+    setPropertyMeta("og:image", socialImage);
+    document.head.querySelector('link[rel="canonical"]')?.setAttribute("href", pageUrl);
   }, [pageId]);
 }
 
 function Header({ activePage }) {
+  const activeTab = activePage.startsWith("store/") ? "store" : activePage;
+
   return (
     <header className="site-header">
       <div className="nav-shell">
@@ -78,7 +87,7 @@ function Header({ activePage }) {
         <nav className="tabs" aria-label="Portfolio sections">
           {pages.map((page) => (
             <button
-              className={`tab ${activePage === page.id ? "active" : ""}`}
+              className={`tab ${activeTab === page.id ? "active" : ""}`}
               key={page.id}
               onClick={() => goTo(page.id)}
               type="button"
@@ -130,13 +139,47 @@ function Home() {
   );
 }
 
+function ProductLabels({ product }) {
+  const labels = getProductLabels(product);
+  if (labels.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="product-labels" aria-label="Product labels">
+      {labels.map((label) => (
+        <span key={label}>{label}</span>
+      ))}
+    </div>
+  );
+}
+
+function ProductPrice({ product, compact = false }) {
+  const pricing = getProductPricing(product);
+  const saleEnd = pricing.promotionActive ? formatPromotionEnd(product.promotion.endsAt) : null;
+
+  return (
+    <div className={`product-price ${compact ? "compact" : ""}`}>
+      {pricing.promotionActive ? <span className="discount-badge">{pricing.discountPercent}% OFF</span> : null}
+      <div className="price-line">
+        {pricing.promotionActive ? <s>{formatCurrency(pricing.basePrice, product.currency)}</s> : null}
+        <strong>
+          {formatCurrency(pricing.currentPrice, product.currency)}
+          {product.priceSuffix ? <small> {product.priceSuffix}</small> : null}
+        </strong>
+      </div>
+      {saleEnd ? <small className="sale-end">Sale ends {saleEnd}</small> : null}
+    </div>
+  );
+}
+
 function Store() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const normalizedQuery = query.trim().toLowerCase();
   const filteredItems = storeItems.filter((item) => {
     const matchesCategory = category === "all" || item.category === category;
-    const searchableText = [item.title, item.kind, item.text, ...item.tags].join(" ").toLowerCase();
+    const searchableText = [item.title, item.kind, item.description ?? item.text, ...item.tags].join(" ").toLowerCase();
     return matchesCategory && (!normalizedQuery || searchableText.includes(normalizedQuery));
   });
   const storeSections = [
@@ -144,20 +187,12 @@ function Store() {
     ["Assets", filteredItems.filter((item) => item.category === "assets")],
   ].filter(([, items]) => items.length > 0);
 
-  const openItem = (item) => {
-    if (item.pageId) {
-      goTo(item.pageId);
-    }
-  };
-
   return (
     <main>
       <section className="content-band store-page">
         <div className="section-heading wide">
           <h1>Store</h1>
-          <p className="lead">
-            Games and asset packs published through itch.io. Unity and itch assets can slot in here as they are released.
-          </p>
+          <p className="lead">Games, Unity tools, and pixel-art assets built from real production work.</p>
         </div>
         <div className="store-controls">
           <label>
@@ -183,22 +218,18 @@ function Store() {
             <h2>{title}</h2>
             <div className="store-grid">
               {items.map((item) => (
-                <article className={`store-card ${item.category} ${item.kind.includes("Unity") ? "unity-asset" : ""}`} key={item.title}>
-                  {item.pageId ? (
-                    <button className="store-art" onClick={() => openItem(item)} type="button">
-                      <img src={item.image} alt={item.imageAlt} loading="lazy" />
-                    </button>
-                  ) : (
-                    <a className="store-art" href={item.url} rel="noopener" target="_blank">
-                      {item.placeholderArt ? <span className="store-placeholder-mark">{item.placeholderArt}</span> : null}
-                      {item.image ? <img src={item.image} alt={item.imageAlt} loading="lazy" /> : null}
-                    </a>
-                  )}
+                <article className={`store-card ${item.category} ${item.kind === "Unity Asset" ? "unity-asset" : ""}`} key={item.title}>
+                  <a className="store-art" href={`#${item.pageId}`} aria-label={`Open ${item.title}`}>
+                    <img src={item.image} alt={item.imageAlt} loading="lazy" />
+                  </a>
                   <div className="store-copy">
                     <div>
                       <p className="project-type">{item.kind}</p>
-                      <h3>{item.title}</h3>
-                      <p>{item.text}</p>
+                      {item.basePrice !== undefined ? <ProductLabels product={item} /> : null}
+                      <h3>
+                        <a className="store-title-link" href={`#${item.pageId}`}>{item.title}</a>
+                      </h3>
+                      <p>{item.description ?? item.text}</p>
                     </div>
                     <div className="tag-list">
                       {item.tags.map((tag) => (
@@ -206,22 +237,14 @@ function Store() {
                       ))}
                     </div>
                     <div className="store-footer">
-                      <div className="price-stack">
-                        {item.discount ? <span className="discount-badge">{item.discount}</span> : null}
-                        <span className="price-line">
-                          {item.originalPrice ? <s>{item.originalPrice}</s> : null}
-                          <strong>{item.price}</strong>
-                        </span>
-                      </div>
-                      {item.pageId ? (
-                        <button className="primary-action" onClick={() => goTo(item.pageId)} type="button">
-                          Open page
-                        </button>
+                      {item.basePrice !== undefined ? (
+                        <ProductPrice compact product={item} />
                       ) : (
-                        <a className="primary-action" href={item.url} rel="noopener" target="_blank">
-                          {item.actionLabel}
-                        </a>
+                        <span className="price-line"><strong>{item.price}</strong></span>
                       )}
+                      <a className="primary-action" href={`#${item.pageId}`}>
+                        {item.category === "assets" ? "View product" : "Open game page"}
+                      </a>
                     </div>
                   </div>
                 </article>
@@ -229,8 +252,193 @@ function Store() {
             </div>
           </section>
         ))}
-        {storeSections.length === 0 ? <p className="empty-store">No matching store items yet.</p> : null}
+        {storeSections.length === 0 ? <p className="empty-store">No products match that search.</p> : null}
       </section>
+    </main>
+  );
+}
+
+function AssetMediaGallery({ product }) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const heroMedia = product.gallery.find((item) => item.src === product.heroImage) ?? {
+    src: product.heroImage,
+    alt: product.imageAlt,
+  };
+  const media = [
+    { type: "image", label: "Overview", ...heroMedia },
+    ...(product.youtubeVideoId
+      ? [{
+          type: "video",
+          label: "Demo",
+          videoId: product.youtubeVideoId,
+          thumbnail: `https://img.youtube.com/vi/${product.youtubeVideoId}/hqdefault.jpg`,
+        }]
+      : []),
+    ...product.gallery
+      .filter((item) => item.src !== product.heroImage)
+      .map((item, index) => ({ type: "image", label: `Image ${index + 1}`, ...item })),
+  ];
+  const selectedMedia = media[selectedIndex] ?? media[0];
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [product.id]);
+
+  return (
+    <div className="asset-media-gallery" aria-label={`${product.title} product media`}>
+      <div className={`asset-media-stage ${product.slug === "scythe-ui" ? "pixel-media" : ""}`}>
+        {selectedMedia.type === "video" ? (
+          <VideoFrame title={`${product.title} product demonstration`} videoId={selectedMedia.videoId} />
+        ) : (
+          <img src={selectedMedia.src} alt={selectedMedia.alt} loading={selectedIndex === 0 ? "eager" : "lazy"} />
+        )}
+      </div>
+      {media.length > 1 ? (
+        <div className="asset-media-thumbnails" aria-label="Product media selection">
+          {media.map((item, index) => (
+            <button
+              aria-label={`Show ${item.label}`}
+              aria-pressed={selectedIndex === index}
+              className={selectedIndex === index ? "active" : ""}
+              key={`${item.type}-${item.src ?? item.videoId}`}
+              onClick={() => setSelectedIndex(index)}
+              type="button"
+            >
+              <img src={item.type === "video" ? item.thumbnail : item.src} alt="" loading="lazy" />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const purchaseChannelContent = {
+  direct: {
+    label: "Buy Direct",
+    comingSoon: "Direct purchase",
+  },
+  itch: {
+    label: "Buy on itch.io",
+    comingSoon: "itch.io",
+  },
+  unity: {
+    label: "Unity Asset Store",
+    comingSoon: "Unity Asset Store",
+  },
+};
+
+function PurchaseChannels({ product }) {
+  return (
+    <div className="purchase-channels">
+      {Object.entries(product.platforms).map(([platformId, platform]) => {
+        const content = purchaseChannelContent[platformId];
+        if (!content) {
+          return null;
+        }
+
+        if (platform.status === "available" && platform.url) {
+          return (
+            <a
+              className="purchase-channel available"
+              href={platform.url}
+              key={platformId}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <span>{content.label}</span>
+              <small>Available now</small>
+            </a>
+          );
+        }
+
+        const statusLabel = platform.status === "pending-review" ? "Pending review" : "Coming soon";
+        return (
+          <button className="purchase-channel" disabled key={platformId} type="button">
+            <span>{content.comingSoon}</span>
+            <small>{statusLabel}</small>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProductPage({ product }) {
+  return (
+    <main>
+      <article className="asset-product-page">
+        <nav className="product-breadcrumb" aria-label="Breadcrumb">
+          <a href="#store">Store</a>
+          <span aria-hidden="true">/</span>
+          <span>{product.title}</span>
+        </nav>
+
+        <section className="asset-product-hero">
+          <div className="asset-product-media">
+            <AssetMediaGallery product={product} />
+          </div>
+
+          <aside className="asset-product-summary">
+            <img className="asset-product-logo" src={product.image} alt={product.imageAlt} />
+            <div>
+              <h1>{product.title}</h1>
+              <p className="asset-product-kind">{product.kind}</p>
+            </div>
+            <ProductLabels product={product} />
+            <p className="asset-product-description">{product.description}</p>
+            <ProductPrice product={product} />
+            <div className="tag-list">
+              {product.tags.map((tag) => (
+                <span key={tag}>{tag}</span>
+              ))}
+            </div>
+            <div className="purchase-heading">
+              <h2>Purchase options</h2>
+              <p>Availability is shown per marketplace.</p>
+            </div>
+            <PurchaseChannels product={product} />
+          </aside>
+        </section>
+
+        <div className="asset-product-content">
+          <section className="asset-copy-section">
+            <h2>About This Asset</h2>
+            <p>{product.longDescription}</p>
+          </section>
+
+          <section className="asset-copy-section">
+            <h2>Features</h2>
+            <ul className="asset-feature-list">
+              {product.features.map((feature) => (
+                <li key={feature}>{feature}</li>
+              ))}
+            </ul>
+          </section>
+
+          {product.detailSections?.map((section) => (
+            <section className="asset-copy-section" key={section.title}>
+              <h2>{section.title}</h2>
+              <p>{section.text}</p>
+            </section>
+          ))}
+
+          <section className="asset-copy-section technical-package">
+            <h2>Technical and Package Information</h2>
+            <dl>
+              {product.technicalInfo.map(([label, value]) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          <a className="secondary-action back-to-store" href="#store">Back to Store</a>
+        </div>
+      </article>
     </main>
   );
 }
@@ -533,15 +741,22 @@ export default function App() {
   const activePage = useHashPage();
   usePageSeo(activePage);
   const pageMap = useMemo(
-    () => ({
-      home: <Home />,
-      projects: <Projects />,
-      store: <Store />,
-      "divine-harvest": <GamePage game={divineHarvest} />,
-      countdown: <GamePage game={countdown} />,
-      skills: <Skills />,
-      contact: <Contact />,
-    }),
+    () => {
+      const productPages = Object.fromEntries(
+        assetProducts.map((product) => [product.pageId, <ProductPage key={product.id} product={product} />]),
+      );
+
+      return {
+        home: <Home />,
+        projects: <Projects />,
+        store: <Store />,
+        "divine-harvest": <GamePage game={divineHarvest} />,
+        countdown: <GamePage game={countdown} />,
+        skills: <Skills />,
+        contact: <Contact />,
+        ...productPages,
+      };
+    },
     [],
   );
 
