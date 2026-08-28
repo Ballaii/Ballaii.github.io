@@ -144,6 +144,46 @@ export const assetProductContent = [
     ],
   },
   {
+    id: "dark-pixel-keyboard-glyph-pack",
+    slug: "keyboard-glyph-pack",
+    title: "Dark Pixel Keyboard Glyph Pack",
+    category: "assets",
+    kind: "Pixel Art Asset",
+    description: "Clean pixel keyboard glyphs designed for dark game UIs and input prompts.",
+    longDescription:
+      "A focused collection of pixel-style keyboard glyphs made for dark interfaces, tutorials, rebinding menus, interaction prompts, and compact HUDs. The keys remain readable at small sizes without overpowering the surrounding UI.",
+    image: "assets/store/keyboard-glyph-pack/hero.webp",
+    imageAlt: "Dark Pixel Keyboard Glyph Pack preview with pixel keyboard keys",
+    heroImage: "assets/store/keyboard-glyph-pack/hero.webp",
+    gallery: [
+      { src: "assets/store/keyboard-glyph-pack/glyph-sheet.webp", alt: "Complete sheet of dark pixel keyboard glyphs" },
+    ],
+    youtubeVideoId: null,
+    tags: ["Pixel Art", "Keyboard", "Input Prompts", "No Generative AI"],
+    features: [
+      "Numbers 0-9, A-Z, arrow keys, and function keys F1-F12.",
+      "Modifier, navigation, editing, symbol, and punctuation keys.",
+      "Readable at small sizes in dark HUDs and menus.",
+      "Engine independent PNG artwork for common game engines.",
+    ],
+    detailSections: [
+      {
+        title: "Made for Game UI",
+        text: "Use the glyphs in interaction prompts, tutorial messages, control menus, runtime rebinding screens, ability hints, and HUD elements.",
+      },
+      {
+        title: "Engine Independent",
+        text: "The artwork works in Unity, Godot, GameMaker, Unreal Engine, and other engines that support standard image assets.",
+      },
+    ],
+    technicalInfo: [
+      ["Package", "keyboard_glyphs.png"],
+      ["Coverage", "0-9, A-Z, F1-F12, arrows, modifiers, navigation, and symbols"],
+      ["Compatibility", "Any engine supporting standard image formats"],
+      ["Generative AI", "Not used"],
+    ],
+  },
+  {
     id: "pixel-art-scythe-ui",
     slug: "scythe-ui",
     title: "Pixel Art Scythe UI Frame",
@@ -189,6 +229,18 @@ export const assetProductContent = [
 ];
 
 export const assetCommerceState = {
+  "dark-pixel-keyboard-glyph-pack": {
+    basePrice: 3.99,
+    currency: "USD",
+    priceSuffix: "or more",
+    labels: ["NEW", "NO GENERATIVE AI"],
+    platforms: {
+      direct: { status: "coming-soon", url: null },
+      itch: { status: "available", url: "https://ballaii.itch.io/dark-pixel-keyboard-glyph-pack" },
+      unity: { status: "unavailable", url: null },
+    },
+    promotion: { enabled: false, discountPercent: null, startsAt: null, endsAt: null },
+  },
   "ballai-save-system": {
     basePrice: 15,
     currency: "USD",

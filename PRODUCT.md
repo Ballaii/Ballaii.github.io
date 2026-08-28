@@ -12,7 +12,7 @@ Game developers and studios evaluating Ballai games, Unity tools, and pixel-art 
 
 ## Product Purpose
 
-Ballai.dev is a portfolio and static storefront for Ballai Fokt Jeno's games, software projects, Unity tools, and game assets. Phase 1 adds credible internal product pages while keeping commerce local and static until a separate store API exists.
+Ballai.dev is a portfolio and storefront for Ballai Fokt Jeno's games, software projects, Unity tools, and game assets. Phase 2 keeps editorial product content in the repository while publishing mutable commerce state from D1 through a public Cloudflare Worker.
 
 ## Positioning
 
@@ -20,7 +20,7 @@ The store presents tools extracted from shipped game-development work with their
 
 ## Operating Context
 
-The site is a React and Vite static application hosted on GitHub Pages. Navigation uses lightweight hash routes. Products may later be sold directly through a separate API and checkout service, but Phase 1 remains a public static frontend with no secrets, accounts, payments, or backend endpoints.
+The public site is a React and Vite application hosted on GitHub Pages. Navigation uses lightweight hash routes. A public Cloudflare Worker reads published commerce state and accepts tightly bounded store analytics. A separate Cloudflare Pages admin is protected by Cloudflare Access and writes draft or published commerce state to D1. Payments, customer accounts, orders, and private downloads remain outside Phase 2.
 
 ## Capabilities and Constraints
 
@@ -31,7 +31,11 @@ The site is a React and Vite static application hosted on GitHub Pages. Navigati
 - Disabled purchase channels are noninteractive and expose accurate Coming soon or Pending review states.
 - The Pixel Art Scythe UI Frame links safely to its live itch.io page.
 - The four Unity products remain unavailable on itch.io and pending Unity Asset Store review until real URLs are supplied.
-- No payment, Cloudflare, authentication, database, customer, admin, or private-download implementation belongs in Phase 1.
+- The Dark Pixel Keyboard Glyph Pack links to its live itch.io page and uses repository-owned media.
+- The public store must fall back to checked-in commerce data when the Worker is unavailable.
+- Public analytics are limited to approved store interaction events and exclude raw IP addresses or customer identity.
+- Admin mutations require a valid Cloudflare Access JWT and use draft-first publishing with an audit trail.
+- No payment, customer, order, account, entitlement, or private-download implementation belongs in Phase 2.
 
 ## Brand Commitments
 

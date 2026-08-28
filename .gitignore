@@ -30,3 +30,11 @@ coverage
 
 *.tsbuildinfo
 .env
+.env.*
+!.env.example
+.dev.vars
+.wrangler/
+worker/.wrangler/
+admin/.wrangler/
+*.sqlite
+*.sqlite3

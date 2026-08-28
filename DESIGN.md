@@ -168,6 +168,10 @@ Panels use compact 12px to 16px corners. Media stages and thumbnails use smaller
 
 The sticky header contains a rounded navigation shell. The active tab uses a gold fill, inactive tabs stay muted, and mobile tabs remain horizontally scrollable rather than compressing their labels.
 
+### Store Administration
+
+The protected admin uses the same color and typography tokens in a denser operational shell. Navigation stays predictable, tables and product cards prioritize state over decoration, and destructive controls require explicit confirmation. Product editing keeps the live preview beside fields on wide screens and moves it ahead of the form on mobile.
+
 ### Product Media Gallery
 
 The gallery uses one large aspect-ratio-safe media stage with a horizontally scrollable thumbnail rail. The selected thumbnail gains a gold border, while embedded videos load only when selected.

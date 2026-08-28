@@ -63,3 +63,20 @@ export function formatPromotionEnd(endsAt) {
     timeZoneName: "short",
   }).format(new Date(endsAt));
 }
+
+export function mergeCommerceState(staticProduct, remoteState) {
+  if (!remoteState) return { ...staticProduct, visibility: "hidden" };
+  return {
+    ...staticProduct,
+    basePrice: remoteState.basePrice,
+    currency: remoteState.currency,
+    displayOrder: remoteState.displayOrder,
+    featured: remoteState.featured,
+    labels: Array.isArray(remoteState.labels) ? remoteState.labels : staticProduct.labels,
+    platforms: remoteState.platforms ?? staticProduct.platforms,
+    priceSuffix: remoteState.priceSuffix,
+    promotion: remoteState.promotion ?? staticProduct.promotion,
+    updatedAt: remoteState.updatedAt,
+    visibility: remoteState.visibility,
+  };
+}

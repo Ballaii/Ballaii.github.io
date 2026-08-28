@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ballai-store-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-28",
+  "triggers": { "crons": ["17 * * * *"] },
+  "ratelimits": [
+    {
+      "name": "ANALYTICS_RATE_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 60, "period": 60 }
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ballai-store",
+      "database_id": "e087a732-369a-4f5a-8a8a-ab94cf87a6b7",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

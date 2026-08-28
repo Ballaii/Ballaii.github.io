@@ -11,7 +11,8 @@ import {
   timeline,
 } from "./data.js";
 import { assetProducts } from "./storeData.js";
-import { formatCurrency, formatPromotionEnd, getProductLabels, getProductPricing } from "./storeUtils.js";
+import { fetchCommerceState, recordStoreEvent } from "./commerceApi.js";
+import { formatCurrency, formatPromotionEnd, getProductLabels, getProductPricing, mergeCommerceState } from "./storeUtils.js";
 
 function currentPageId() {
   const hash = window.location.hash.replace("#", "");
@@ -32,6 +33,32 @@ function useHashPage() {
 
 function goTo(pageId) {
   window.location.hash = pageId;
+}
+
+function useCommerceCatalog() {
+  const [remoteProducts, setRemoteProducts] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchCommerceState(controller.signal)
+      .then((products) => setRemoteProducts(Object.fromEntries(products.map((product) => [product.id, product]))))
+      .catch((error) => {
+        if (import.meta.env.DEV && error.name !== "AbortError") {
+          console.info("Using static commerce fallback:", error.message);
+        }
+      });
+    return () => controller.abort();
+  }, []);
+
+  return useMemo(() => {
+    const mergedAssets = assetProducts.map((product) => mergeCommerceState(product, remoteProducts?.[product.id]));
+    const games = storeItems.filter((item) => item.category === "games");
+    const visibleGames = remoteProducts ? games : [];
+    const publicAssets = mergedAssets
+      .filter((product) => product.visibility !== "hidden")
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+    return { assetProducts: mergedAssets, storeItems: [...visibleGames, ...publicAssets] };
+  }, [remoteProducts]);
 }
 
 function setMeta(name, content) {
@@ -173,11 +200,11 @@ function ProductPrice({ product, compact = false }) {
   );
 }
 
-function Store() {
+function Store({ items }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const normalizedQuery = query.trim().toLowerCase();
-  const filteredItems = storeItems.filter((item) => {
+  const filteredItems = items.filter((item) => {
     const matchesCategory = category === "all" || item.category === category;
     const searchableText = [item.title, item.kind, item.description ?? item.text, ...item.tags].join(" ").toLowerCase();
     return matchesCategory && (!normalizedQuery || searchableText.includes(normalizedQuery));
@@ -186,6 +213,16 @@ function Store() {
     ["Games", filteredItems.filter((item) => item.category === "games")],
     ["Assets", filteredItems.filter((item) => item.category === "assets")],
   ].filter(([, items]) => items.length > 0);
+
+  useEffect(() => {
+    recordStoreEvent({ eventType: "store_view" });
+  }, []);
+
+  useEffect(() => {
+    if (!normalizedQuery) return undefined;
+    const timeout = window.setTimeout(() => recordStoreEvent({ eventType: "search" }), 500);
+    return () => window.clearTimeout(timeout);
+  }, [normalizedQuery]);
 
   return (
     <main>
@@ -206,7 +243,7 @@ function Store() {
           </label>
           <label>
             <span>Filter</span>
-            <select onChange={(event) => setCategory(event.target.value)} value={category}>
+            <select onChange={(event) => { setCategory(event.target.value); recordStoreEvent({ eventType: "store_filter", category: event.target.value }); }} value={category}>
               <option value="all">All items</option>
               <option value="games">Games</option>
               <option value="assets">Assets</option>
@@ -344,6 +381,7 @@ function PurchaseChannels({ product }) {
               className="purchase-channel available"
               href={platform.url}
               key={platformId}
+              onClick={() => recordStoreEvent({ eventType: "marketplace_click", productId: product.id, platform: platformId })}
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -353,7 +391,11 @@ function PurchaseChannels({ product }) {
           );
         }
 
-        const statusLabel = platform.status === "pending-review" ? "Pending review" : "Coming soon";
+        const statusLabel = platform.status === "pending-review"
+          ? "Pending review"
+          : platform.status === "unavailable"
+            ? "Unavailable"
+            : "Coming soon";
         return (
           <button className="purchase-channel" disabled key={platformId} type="button">
             <span>{content.comingSoon}</span>
@@ -366,6 +408,24 @@ function PurchaseChannels({ product }) {
 }
 
 function ProductPage({ product }) {
+  useEffect(() => {
+    if (product.visibility !== "hidden") {
+      recordStoreEvent({ eventType: "product_view", productId: product.id });
+    }
+  }, [product.id, product.visibility]);
+
+  if (product.visibility === "hidden") {
+    return (
+      <main>
+        <section className="content-band unavailable-product">
+          <h1>Product unavailable</h1>
+          <p>This product is not currently listed in the Ballai Store.</p>
+          <a className="secondary-action" href="#store">Back to Store</a>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main>
       <article className="asset-product-page">
@@ -739,17 +799,18 @@ function Footer() {
 
 export default function App() {
   const activePage = useHashPage();
+  const commerceCatalog = useCommerceCatalog();
   usePageSeo(activePage);
   const pageMap = useMemo(
     () => {
       const productPages = Object.fromEntries(
-        assetProducts.map((product) => [product.pageId, <ProductPage key={product.id} product={product} />]),
+        commerceCatalog.assetProducts.map((product) => [product.pageId, <ProductPage key={product.id} product={product} />]),
       );
 
       return {
         home: <Home />,
         projects: <Projects />,
-        store: <Store />,
+        store: <Store items={commerceCatalog.storeItems} />,
         "divine-harvest": <GamePage game={divineHarvest} />,
         countdown: <GamePage game={countdown} />,
         skills: <Skills />,
@@ -757,7 +818,7 @@ export default function App() {
         ...productPages,
       };
     },
-    [],
+    [commerceCatalog],
   );
 
   return (
