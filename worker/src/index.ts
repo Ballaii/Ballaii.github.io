@@ -61,6 +61,9 @@ interface AnalyticsPayload {
 }
 
 const allowedOrigins = new Set([
+  "https://ballai.dev",
+  "https://www.ballai.dev",
+  "https://admin.ballai.dev",
   "https://ballaii.github.io",
   "https://ballai-admin.pages.dev",
   "http://localhost:5173",
@@ -301,7 +304,22 @@ function validateAnalyticsPayload(payload: AnalyticsPayload): string | null {
   if (payload.category != null && !isShortText(payload.category, 40)) {
     return "Invalid category";
   }
-  return null;
+  const hasProduct = typeof payload.productId === "string";
+  const hasPlatform = typeof payload.platform === "string";
+  const hasCategory = typeof payload.category === "string";
+  switch (payload.eventType) {
+    case "product_view":
+      return hasProduct && !hasPlatform && !hasCategory ? null : "Invalid product view event";
+    case "marketplace_click":
+      return hasProduct && hasPlatform && !hasCategory ? null : "Invalid marketplace click event";
+    case "store_filter":
+      return !hasProduct && !hasPlatform && hasCategory ? null : "Invalid store filter event";
+    case "store_view":
+    case "search":
+      return !hasProduct && !hasPlatform && !hasCategory ? null : "Invalid store event";
+    default:
+      return "Unknown analytics event";
+  }
 }
 
 async function createClientHash(request: Request, env: Env): Promise<string> {

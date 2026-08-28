@@ -1,5 +1,7 @@
 # Ballai Store API
 
+The canonical public API is `https://api.ballai.dev`. The existing `https://ballai-store-api.ballaifoktjeno.workers.dev` endpoint remains enabled during migration and as a rollback path.
+
 ## Phase 2.5 implementation
 
 The Worker exposes public store endpoints only:
@@ -42,3 +44,7 @@ pnpm --dir worker dev
 ```
 
 Local D1 state is stored under `.wrangler/` and is ignored by Git.
+
+## Production origins
+
+Browser CORS is limited to the canonical public site and admin host, plus the legacy GitHub Pages and Pages.dev origins during migration. Unknown origins do not receive an `Access-Control-Allow-Origin` response header.

@@ -20,7 +20,7 @@ The store presents tools extracted from shipped game-development work with their
 
 ## Operating Context
 
-The public site is a React and Vite application hosted on GitHub Pages. Navigation uses lightweight hash routes. A public Cloudflare Worker reads published commerce state and accepts tightly bounded store analytics. A separate Cloudflare Pages admin is protected by Cloudflare Access and writes draft or published commerce state to D1. Payments, customer accounts, orders, and private downloads remain outside Phase 2.
+The public site is a React and Vite application hosted on GitHub Pages at `https://ballai.dev`. Navigation uses lightweight hash routes. The public Cloudflare Worker is exposed at `https://api.ballai.dev`, reads published commerce state, and accepts tightly bounded store analytics. The existing Cloudflare Pages admin is exposed at `https://admin.ballai.dev`, protected by Cloudflare Access, and writes draft or published commerce state to D1. Payments, customer accounts, orders, and private downloads remain outside Phase 2.
 
 ## Capabilities and Constraints
 
@@ -42,6 +42,15 @@ The public site is a React and Vite application hosted on GitHub Pages. Navigati
 ## Brand Commitments
 
 Preserve the existing Ballai.dev name, concise voice, dark portfolio identity, gold accent, responsive behavior, and lightweight React architecture. Product pages should feel commercial and credible without copying the Unity Asset Store or inventing technical claims.
+
+## Production Hosts
+
+- Public site: `https://ballai.dev`
+- Public redirect: `https://www.ballai.dev`
+- Protected admin: `https://admin.ballai.dev`
+- Public store API and published media: `https://api.ballai.dev`
+
+The legacy GitHub Pages, Pages.dev, and Workers.dev hostnames stay available during migration and verification. They are compatibility endpoints, not canonical URLs.
 
 ## Evidence on Hand
 

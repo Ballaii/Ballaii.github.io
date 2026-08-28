@@ -13,7 +13,7 @@ import {
   saveDraft,
 } from "../../_lib/commerce";
 import { json, readJson } from "../../_lib/responses";
-import { mediaObjectKey, validateUpload } from "../../_lib/media";
+import { maximumUploadBytes, mediaObjectKey, validateUpload } from "../../_lib/media";
 
 interface Env extends AccessEnv {
   DB: D1Database;
@@ -135,6 +135,11 @@ function requireSameOriginRequest(request: Request): void {
 }
 
 async function uploadMedia(request: Request, env: Env, actorEmail: string): Promise<Response> {
+  const contentLength = Number(request.headers.get("Content-Length") ?? 0);
+  const maximumMultipartBytes = maximumUploadBytes + 64 * 1024;
+  if (Number.isFinite(contentLength) && contentLength > maximumMultipartBytes) {
+    return json({ error: "Media upload is too large" }, 413);
+  }
   const form = await request.formData();
   const productId = form.get("productId");
   const role = form.get("role");

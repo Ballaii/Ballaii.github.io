@@ -1,4 +1,4 @@
-const maximumBytes = 10 * 1024 * 1024;
+export const maximumUploadBytes = 10 * 1024 * 1024;
 const maximumDimension = 6000;
 const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 
@@ -63,7 +63,7 @@ function imageInfo(bytes: Uint8Array, declaredType: string): MediaInfo {
 }
 
 export function validateUpload(file: File, bytes: Uint8Array): MediaInfo {
-  if (!allowedTypes.has(file.type) || bytes.byteLength > maximumBytes) {
+  if (!allowedTypes.has(file.type) || bytes.byteLength > maximumUploadBytes) {
     throw new Error("Only PNG, JPEG, WebP, or GIF images up to 10 MB are supported");
   }
   return imageInfo(bytes, file.type);

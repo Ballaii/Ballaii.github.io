@@ -298,7 +298,7 @@ export const productPageMeta = Object.fromEntries(
     {
       title: `${product.title} | Ballai Store`,
       description: product.description,
-      image: `https://ballaii.github.io/${product.image}`,
+      image: `https://ballai.dev/${product.image}`,
     },
   ]),
 );

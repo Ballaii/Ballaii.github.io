@@ -4,11 +4,11 @@ export const pages = [
   { id: "home", label: "Home" },
   { id: "projects", label: "Projects" },
   { id: "store", label: "Store" },
-  { id: "skills", label: "Skills" },
+  { id: "about", label: "About" },
   { id: "contact", label: "Contact" },
 ];
 
-export const routeIds = [...pages.map((page) => page.id), "divine-harvest", "countdown", ...productRouteIds];
+export const routeIds = [...pages.map((page) => page.id), "skills", "divine-harvest", "countdown", ...productRouteIds];
 
 export const pageMeta = {
   home: {
@@ -36,10 +36,14 @@ export const pageMeta = {
     description:
       "Second's Thief is an ongoing arena survivor based on reverse progression, time pressure, bosses, and leaderboard runs.",
   },
-  skills: {
-    title: "Skills | Ballai Fokt Jeno",
+  about: {
+    title: "About | Ballai Fokt Jeno",
     description:
-      "Game development, engineering, AI security, Flutter, OpenGL, Unity, C#, Python, and toolchain skills.",
+      "About Ballai Fokt Jeno, a game developer and software engineer building Unity games, tools, mobile apps, graphics projects, and applied AI systems.",
+  },
+  skills: {
+    title: "About | Ballai Fokt Jeno",
+    description: "About Ballai Fokt Jeno and his game development, software engineering, and frontend certifications.",
   },
   contact: {
     title: "Contact | Ballai Fokt Jeno",

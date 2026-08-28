@@ -3,6 +3,11 @@
   "name": "ballai-store-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-28",
+  "workers_dev": true,
+  "preview_urls": true,
+  "routes": [
+    { "pattern": "api.ballai.dev", "custom_domain": true }
+  ],
   "triggers": { "crons": ["17 * * * *"] },
   "ratelimits": [
     {

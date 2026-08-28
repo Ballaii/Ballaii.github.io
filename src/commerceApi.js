@@ -1,5 +1,5 @@
 const commerceApiUrl = import.meta.env.VITE_COMMERCE_API_URL
-  ?? "https://ballai-store-api.ballaifoktjeno.workers.dev";
+  ?? "https://api.ballai.dev";
 
 export async function fetchCommerceState(signal) {
   if (!commerceApiUrl) {

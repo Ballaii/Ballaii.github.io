@@ -14,6 +14,9 @@ import { assetProducts } from "./storeData.js";
 import { fetchCommerceState, recordStoreEvent } from "./commerceApi.js";
 import { formatCurrency, formatPromotionEnd, getProductLabels, getProductPricing, mergeCommerceState } from "./storeUtils.js";
 
+const publicOrigin = "https://ballai.dev";
+const commerceApiOrigin = "https://api.ballai.dev";
+
 function currentPageId() {
   const hash = window.location.hash.replace("#", "");
   return routeIds.includes(hash) || hash.startsWith("store/") ? hash : "home";
@@ -41,7 +44,7 @@ function useCommerceCatalog() {
   useEffect(() => {
     const controller = new AbortController();
     fetchCommerceState(controller.signal)
-      .then((products) => setRemoteProducts(Object.fromEntries(products.map((product) => [product.id, { ...product, mediaBaseUrl: "https://ballai-store-api.ballaifoktjeno.workers.dev" }]))))
+      .then((products) => setRemoteProducts(Object.fromEntries(products.map((product) => [product.id, { ...product, mediaBaseUrl: commerceApiOrigin }]))))
       .catch((error) => {
         if (import.meta.env.DEV && error.name !== "AbortError") {
           console.info("Using static commerce fallback:", error.message);
@@ -88,8 +91,8 @@ function setPropertyMeta(property, content) {
 function usePageSeo(pageId) {
   useEffect(() => {
     const meta = pageMeta[pageId] ?? pageMeta.home;
-    const pageUrl = pageId === "home" ? "https://ballaii.github.io/" : `https://ballaii.github.io/#${pageId}`;
-    const socialImage = meta.image ?? "https://ballaii.github.io/assets/project-divine-harvest.webp";
+    const pageUrl = pageId === "home" ? `${publicOrigin}/` : `${publicOrigin}/#${pageId}`;
+    const socialImage = meta.image ?? `${publicOrigin}/assets/project-divine-harvest.webp`;
     document.title = meta.title;
     setMeta("description", meta.description);
     setMeta("twitter:title", meta.title);
@@ -724,25 +727,68 @@ function PraisePanel({ game }) {
   );
 }
 
-function Skills() {
+function About() {
   return (
     <main>
-      <section className="content-band">
-        <div className="section-heading wide">
-          <h1>Skills</h1>
+      <section className="content-band about-page">
+        <div className="about-intro">
+          <div>
+            <h1>About me</h1>
+            <p className="about-lead">
+              I am a game developer and software engineer who enjoys turning systems into things people can play, use, and understand.
+            </p>
+            <p>
+              My work spans released Unity games, reusable game-development tools, frontend and mobile applications, graphics programming, automation, and applied AI security. I care about the details behind the experience: architecture, feedback, performance, and a clear path from idea to working release.
+            </p>
+          </div>
+          <dl className="about-index">
+            <div><dt>Primary focus</dt><dd>Game development</dd></div>
+            <div><dt>Main engine</dt><dd>Unity and C#</dd></div>
+            <div><dt>Also building</dt><dd>Tools, web, mobile, and AI systems</dd></div>
+          </dl>
         </div>
-        <div className="skills-grid">
+
+        <section className="about-capabilities" aria-labelledby="capabilities-title">
+          <h2 id="capabilities-title">What I work with</h2>
+          <div className="capability-list">
           {skillGroups.map((group) => (
-            <article className="skill-panel" key={group.name}>
+            <div className="capability-row" key={group.name}>
               <h2>{group.name}</h2>
               <ul className="chip-list">
                 {group.items.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-            </article>
+            </div>
           ))}
-        </div>
+          </div>
+        </section>
+
+        <section className="certifications" aria-labelledby="certifications-title">
+          <div className="certification-heading">
+            <h2 id="certifications-title">Certifications</h2>
+            <p>Verified coursework that supports the frontend side of my game, tool, and product work.</p>
+          </div>
+          <article className="certification-entry">
+            <a href="https://www.freecodecamp.org/certification/ballai/front-end-development-libraries-v9" rel="noopener" target="_blank">
+              <img
+                alt="freeCodeCamp Front-End Development Libraries Developer Certification awarded to Ballai on August 27, 2026"
+                src="assets/certificate-freecodecamp-frontend.webp"
+              />
+            </a>
+            <div className="certification-copy">
+              <h3>Front-End Development Libraries</h3>
+              <p>freeCodeCamp Developer Certification</p>
+              <dl>
+                <div><dt>Awarded</dt><dd>August 27, 2026</dd></div>
+                <div><dt>Coursework</dt><dd>Approximately 300 hours</dd></div>
+              </dl>
+              <a className="secondary-action" href="https://www.freecodecamp.org/certification/ballai/front-end-development-libraries-v9" rel="noopener" target="_blank">
+                Verify certification
+              </a>
+            </div>
+          </article>
+        </section>
       </section>
     </main>
   );
@@ -815,7 +861,8 @@ export default function App() {
         store: <Store items={commerceCatalog.storeItems} />,
         "divine-harvest": <GamePage game={divineHarvest} />,
         countdown: <GamePage game={countdown} />,
-        skills: <Skills />,
+        about: <About />,
+        skills: <About />,
         contact: <Contact />,
         ...productPages,
       };
