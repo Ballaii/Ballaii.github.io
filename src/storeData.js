@@ -11,7 +11,7 @@ export const assetProductContent = [
     id: "ballai-save-system",
     slug: "save-system",
     title: "Ballai Save System",
-    seoTitle: "Ballai Save System Unity Save System | Ballai",
+    seoTitle: "Ballai Save System - Unity Save System | Ballai",
     category: "assets",
     kind: "Unity Asset",
     description: "A modular save framework for slots, metadata, serialization, storage, and registered saveable objects.",

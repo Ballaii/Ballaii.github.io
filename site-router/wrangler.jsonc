@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ballai-site-router",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-28",
+  "workers_dev": true,
+  "preview_urls": true,
+  "routes": [
+    { "pattern": "ballai.dev", "custom_domain": true },
+    { "pattern": "www.ballai.dev", "custom_domain": true }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ballai-store",
+      "database_id": "e087a732-369a-4f5a-8a8a-ab94cf87a6b7"
+    }
+  ]
+}

@@ -17,25 +17,74 @@ import { formatCurrency, formatPromotionEnd, getProductLabels, getProductPricing
 const publicOrigin = "https://ballai.dev";
 const commerceApiOrigin = "https://api.ballai.dev";
 
+function pathForPage(pageId) {
+  if (pageId === "home") return "/";
+  if (pageId === "divine-harvest") return "/projects/divine-harvest";
+  if (pageId === "countdown") return "/projects/seconds-thief";
+  return `/${pageId}`;
+}
+
+function pageIdForPath(pathname) {
+  const path = decodeURIComponent(pathname.replace(/\/+$/, "") || "/");
+  if (path === "/") return "home";
+  if (path === "/projects/divine-harvest") return "divine-harvest";
+  if (path === "/projects/seconds-thief") return "countdown";
+  if (path === "/store") return "store";
+  if (path.startsWith("/store/")) return `store/${path.slice("/store/".length)}`;
+  const pageId = path.slice(1);
+  return routeIds.includes(pageId) ? pageId : "home";
+}
+
+function legacyHashPageId() {
+  const hash = window.location.hash.slice(1);
+  return routeIds.includes(hash) || hash.startsWith("store/") ? hash : null;
+}
+
 function currentPageId() {
-  const hash = window.location.hash.replace("#", "");
-  return routeIds.includes(hash) || hash.startsWith("store/") ? hash : "home";
+  return legacyHashPageId() ?? pageIdForPath(window.location.pathname);
 }
 
 function useHashPage() {
   const [page, setPage] = useState(currentPageId);
 
   useEffect(() => {
-    const handleHashChange = () => setPage(currentPageId());
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
+    const legacyPage = legacyHashPageId();
+    if (legacyPage) {
+      window.history.replaceState(null, "", pathForPage(legacyPage));
+      setPage(legacyPage);
+    }
+    const handleNavigation = () => setPage(pageIdForPath(window.location.pathname));
+    window.addEventListener("popstate", handleNavigation);
+    window.addEventListener("hashchange", handleNavigation);
+    return () => {
+      window.removeEventListener("popstate", handleNavigation);
+      window.removeEventListener("hashchange", handleNavigation);
+    };
   }, []);
 
   return page;
 }
 
 function goTo(pageId) {
-  window.location.hash = pageId;
+  window.history.pushState(null, "", pathForPage(pageId));
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
+
+function InternalLink({ pageId, children, onClick, ...props }) {
+  return (
+    <a
+      {...props}
+      href={pathForPage(pageId)}
+      onClick={(event) => {
+        onClick?.(event);
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        goTo(pageId);
+      }}
+    >
+      {children}
+    </a>
+  );
 }
 
 function useCommerceCatalog() {
@@ -88,10 +137,15 @@ function setPropertyMeta(property, content) {
   element.setAttribute("content", content);
 }
 
-function usePageSeo(pageId) {
+function usePageSeo(pageId, products) {
   useEffect(() => {
-    const meta = pageMeta[pageId] ?? pageMeta.home;
-    const pageUrl = pageId === "home" ? `${publicOrigin}/` : `${publicOrigin}/#${pageId}`;
+    const product = products.find((item) => item.pageId === pageId);
+    const meta = pageMeta[pageId] ?? (product ? {
+      title: product.seoTitle ?? `${product.title} | Ballai`,
+      description: product.description,
+      image: `${publicOrigin}/${product.image}`,
+    } : pageMeta.home);
+    const pageUrl = `${publicOrigin}${pathForPage(pageId)}`;
     const socialImage = meta.image ?? `${publicOrigin}/assets/project-divine-harvest.webp`;
     document.title = meta.title;
     setMeta("description", meta.description);
@@ -103,7 +157,7 @@ function usePageSeo(pageId) {
     setPropertyMeta("og:url", pageUrl);
     setPropertyMeta("og:image", socialImage);
     document.head.querySelector('link[rel="canonical"]')?.setAttribute("href", pageUrl);
-  }, [pageId]);
+  }, [pageId, products]);
 }
 
 function Header({ activePage }) {
@@ -112,20 +166,19 @@ function Header({ activePage }) {
   return (
     <header className="site-header">
       <div className="nav-shell">
-        <a className="brand" href="#home" aria-label="Go to homepage">
+        <InternalLink className="brand" pageId="home" aria-label="Go to homepage">
           <span>Ballai Fokt Jeno</span>
           <small>ballai.dev</small>
-        </a>
+        </InternalLink>
         <nav className="tabs" aria-label="Portfolio sections">
           {pages.map((page) => (
-            <button
+            <InternalLink
               className={`tab ${activeTab === page.id ? "active" : ""}`}
               key={page.id}
-              onClick={() => goTo(page.id)}
-              type="button"
+              pageId={page.id}
             >
               {page.label}
-            </button>
+            </InternalLink>
           ))}
         </nav>
       </div>
@@ -261,15 +314,15 @@ function Store({ items }) {
             <div className="store-grid">
               {items.map((item) => (
                 <article className={`store-card ${item.category} ${item.kind === "Unity Asset" ? "unity-asset" : ""}`} key={item.title}>
-                  <a className="store-art" href={`#${item.pageId}`} aria-label={`Open ${item.title}`}>
+                  <InternalLink className="store-art" pageId={item.pageId} aria-label={`Open ${item.title}`}>
                     <img src={item.image} alt={item.imageAlt} loading="lazy" />
-                  </a>
+                  </InternalLink>
                   <div className="store-copy">
                     <div>
                       <p className="project-type">{item.kind}</p>
                       {item.basePrice !== undefined ? <ProductLabels product={item} /> : null}
                       <h3>
-                        <a className="store-title-link" href={`#${item.pageId}`}>{item.title}</a>
+                        <InternalLink className="store-title-link" pageId={item.pageId}>{item.title}</InternalLink>
                       </h3>
                       <p>{item.description ?? item.text}</p>
                     </div>
@@ -284,9 +337,9 @@ function Store({ items }) {
                       ) : (
                         <span className="price-line"><strong>{item.price}</strong></span>
                       )}
-                      <a className="primary-action" href={`#${item.pageId}`}>
+                      <InternalLink className="primary-action" pageId={item.pageId}>
                         {item.category === "assets" ? "View product" : "Open game page"}
-                      </a>
+                      </InternalLink>
                     </div>
                   </div>
                 </article>
@@ -425,7 +478,7 @@ function ProductPage({ product }) {
         <section className="content-band unavailable-product">
           <h1>Product unavailable</h1>
           <p>This product is not currently listed in the Ballai Store.</p>
-          <a className="secondary-action" href="#store">Back to Store</a>
+          <InternalLink className="secondary-action" pageId="store">Back to Store</InternalLink>
         </section>
       </main>
     );
@@ -435,7 +488,7 @@ function ProductPage({ product }) {
     <main>
       <article className="asset-product-page">
         <nav className="product-breadcrumb" aria-label="Breadcrumb">
-          <a href="#store">Store</a>
+          <InternalLink pageId="store">Store</InternalLink>
           <span aria-hidden="true">/</span>
           <span>{product.title}</span>
         </nav>
@@ -501,7 +554,7 @@ function ProductPage({ product }) {
             </dl>
           </section>
 
-          <a className="secondary-action back-to-store" href="#store">Back to Store</a>
+          <InternalLink className="secondary-action back-to-store" pageId="store">Back to Store</InternalLink>
         </div>
       </article>
     </main>
@@ -526,9 +579,9 @@ function Projects() {
                 <h2>{project.name}</h2>
                 <p>{project.summary}</p>
                 {["divine-harvest", "countdown"].includes(project.id) && (
-                  <button className="inline-link" onClick={() => goTo(project.id)} type="button">
+                  <InternalLink className="inline-link" pageId={project.id}>
                     Game page
-                  </button>
+                  </InternalLink>
                 )}
               </div>
             </article>
@@ -824,12 +877,12 @@ function Footer() {
           <p>Games, tools, and useful software by Ballai Fokt Jeno.</p>
         </div>
         <nav className="footer-links" aria-label="Footer links">
-          <button aria-label="Store" onClick={() => goTo("store")} title="Store" type="button">
+          <InternalLink aria-label="Store" pageId="store" title="Store">
             <img alt="" src="assets/icon-store.svg" />
-          </button>
-          <button aria-label="Projects" onClick={() => goTo("projects")} title="Projects" type="button">
+          </InternalLink>
+          <InternalLink aria-label="Projects" pageId="projects" title="Projects">
             <img alt="" src="assets/icon-projects.png" />
-          </button>
+          </InternalLink>
           <a aria-label="itch.io" href="https://ballaii.itch.io" rel="noopener" target="_blank" title="itch.io">
             <img alt="" src="assets/icon-itch.svg" />
           </a>
@@ -848,7 +901,7 @@ function Footer() {
 export default function App() {
   const activePage = useHashPage();
   const commerceCatalog = useCommerceCatalog();
-  usePageSeo(activePage);
+  usePageSeo(activePage, commerceCatalog.assetProducts);
   const pageMap = useMemo(
     () => {
       const productPages = Object.fromEntries(

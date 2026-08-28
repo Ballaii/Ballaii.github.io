@@ -12,7 +12,7 @@ export const routeIds = [...pages.map((page) => page.id), "skills", "divine-harv
 
 export const pageMeta = {
   home: {
-    title: "Ballai Fokt Jeno | Game Developer Portfolio",
+    title: "ballai.dev - Game Dev Tools & Assets",
     description:
       "Portfolio and store of Ballai Fokt Jeno, featuring Unity games, game assets, AI security, SCADA simulation, Flutter apps, and OpenGL work.",
   },
@@ -22,9 +22,9 @@ export const pageMeta = {
       "Selected game development, automation, AI malware detection, Flutter, and OpenGL projects by Ballai Fokt Jeno.",
   },
   store: {
-    title: "Store | Ballai Fokt Jeno",
+    title: "Ballai - Unity Tools & Game Assets",
     description:
-      "Games and asset packs by Ballai Fokt Jeno, including Divine Harvest, Second's Thief, and Pixel Art Scythe UI Frame.",
+      "Unity tools, game-development systems, and pixel-art assets by Ballai.",
   },
   "divine-harvest": {
     title: "Divine Harvest | Ballai Fokt Jeno",

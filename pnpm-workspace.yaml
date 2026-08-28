@@ -1,6 +1,7 @@
 packages:
   - admin
   - worker
+  - site-router
 
 allowBuilds:
   esbuild: true
