@@ -3,7 +3,7 @@ import {
   discardDraft,
   archiveProduct,
   createProduct,
-  deleteDraftProduct,
+  deleteProduct,
   endAllSales,
   listProducts,
   publishDraft,
@@ -243,7 +243,7 @@ async function route(request: Request, env: Env, actorEmail: string): Promise<Re
   }
   if (productAction && request.method === "DELETE" && productAction.action === "delete") {
     requireSameOriginMutation(request);
-    await deleteDraftProduct(env.DB, env.MEDIA_BUCKET, productAction.id, actorEmail);
+    await deleteProduct(env.DB, env.MEDIA_BUCKET, productAction.id, actorEmail);
     return json({ deleted: true });
   }
   if (request.method === "POST" && path === "/api/admin/sales/end-all") {

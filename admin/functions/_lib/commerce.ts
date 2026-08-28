@@ -829,19 +829,26 @@ export async function restoreProduct(db: D1Database, productId: string, actorEma
   return (await listProducts(db)).find((item) => item.id === productId)!;
 }
 
-export async function deleteDraftProduct(db: D1Database, bucket: R2Bucket, productId: string, actorEmail: string): Promise<void> {
+export async function deleteProduct(db: D1Database, bucket: R2Bucket, productId: string, actorEmail: string): Promise<void> {
   const product = (await listProducts(db)).find((item) => item.id === productId);
   if (!product) throw new Error("Product not found");
-  const published = await db.prepare("SELECT 1 FROM product_revisions WHERE product_id = ? AND stage = 'published'").bind(productId).first();
-  const analytics = await db.prepare("SELECT 1 FROM analytics_events WHERE product_id = ? LIMIT 1").bind(productId).first();
-  if (published || analytics || product.archivedAt) throw new Error("Only an unpublished draft with no history can be deleted");
-  const media = await db.prepare("SELECT m.r2_key FROM media_objects m JOIN product_revision_media rm ON rm.media_id = m.id WHERE rm.revision_key = ?").bind(`${productId}:draft`).all<{ r2_key: string }>();
-  await Promise.all(media.results.map((row) => bucket.delete(row.r2_key)));
+  const media = await db.prepare("SELECT DISTINCT m.id, m.r2_key FROM media_objects m JOIN product_revision_media rm ON rm.media_id = m.id JOIN product_revisions r ON r.revision_key = rm.revision_key WHERE r.product_id = ?").bind(productId).all<{ id: string; r2_key: string }>();
+  const mediaIds = media.results.map((row) => row.id);
+  const now = new Date().toISOString();
   await db.batch([
-    db.prepare("DELETE FROM media_objects WHERE id IN (SELECT media_id FROM product_revision_media WHERE revision_key = ?)").bind(`${productId}:draft`),
     db.prepare("DELETE FROM products WHERE id = ?").bind(productId),
-    ...auditStatements(db, null, ["draft_deleted"], actorEmail, { productId }, null),
+    ...(mediaIds.length ? [db.prepare(`UPDATE media_objects SET orphaned_at = COALESCE(orphaned_at, ?) WHERE id IN (${mediaIds.map(() => "?").join(",")})`).bind(now, ...mediaIds)] : []),
+    ...auditStatements(db, null, ["product_deleted"], actorEmail, { productId }, null),
   ]);
+  let mediaDeleted = false;
+  try {
+    await Promise.all(media.results.map((row) => bucket.delete(row.r2_key)));
+    mediaDeleted = true;
+  } finally {
+    if (mediaDeleted && mediaIds.length) {
+      await db.prepare(`DELETE FROM media_objects WHERE id IN (${mediaIds.map(() => "?").join(",")}) AND orphaned_at IS NOT NULL AND NOT EXISTS (SELECT 1 FROM product_revision_media WHERE media_id = media_objects.id)`).bind(...mediaIds).run();
+    }
+  }
 }
 
 export async function removeDraftMedia(db: D1Database, mediaId: string, productId: string, actorEmail: string): Promise<void> {

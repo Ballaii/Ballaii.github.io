@@ -18,7 +18,7 @@ export const adminApi = {
   analytics: (range) => request(`/analytics?range=${range}`),
   dashboard: () => request("/dashboard"),
   createProduct: (payload) => request("/products", { method: "POST", body: JSON.stringify(payload) }),
-  deleteDraft: (productId) => request(`/products/${encodeURIComponent(productId)}/delete`, { method: "DELETE" }),
+  deleteProduct: (productId) => request(`/products/${encodeURIComponent(productId)}/delete`, { method: "DELETE" }),
   discardDraft: (productId, draftRevisionToken) => request(`/products/${encodeURIComponent(productId)}/discard`, {
     method: "POST", body: JSON.stringify({ draftRevisionToken }),
   }),
