@@ -11,6 +11,9 @@
       "simple": { "limit": 60, "period": 60 }
     }
   ],
+  "r2_buckets": [
+    { "binding": "MEDIA_BUCKET", "bucket_name": "ballai-store-media" }
+  ],
   "d1_databases": [
     {
       "binding": "DB",

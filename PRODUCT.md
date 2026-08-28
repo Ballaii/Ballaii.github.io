@@ -12,7 +12,7 @@ Game developers and studios evaluating Ballai games, Unity tools, and pixel-art 
 
 ## Product Purpose
 
-Ballai.dev is a portfolio and storefront for Ballai Fokt Jeno's games, software projects, Unity tools, and game assets. Phase 2 keeps editorial product content in the repository while publishing mutable commerce state from D1 through a public Cloudflare Worker.
+Ballai.dev is a portfolio and storefront for Ballai Fokt Jeno's games, software projects, Unity tools, and game assets. Phase 2.5 keeps listing content, commerce state, revisions, and media references in D1, with the public catalog delivered through a Cloudflare Worker.
 
 ## Positioning
 
@@ -32,9 +32,11 @@ The public site is a React and Vite application hosted on GitHub Pages. Navigati
 - The Pixel Art Scythe UI Frame links safely to its live itch.io page.
 - The four Unity products remain unavailable on itch.io and pending Unity Asset Store review until real URLs are supplied.
 - The Dark Pixel Keyboard Glyph Pack links to its live itch.io page and uses repository-owned media.
-- The public store must fall back to checked-in commerce data when the Worker is unavailable.
+- The public store must fail closed when authoritative catalog state is unavailable.
 - Public analytics are limited to approved store interaction events and exclude raw IP addresses or customer identity.
-- Admin mutations require a valid Cloudflare Access JWT and use draft-first publishing with an audit trail.
+- Admin mutations require a valid Cloudflare Access JWT and same-origin checks, then use draft-first publishing with optimistic concurrency and an audit trail.
+- Marketing media is private in R2 and is served publicly only through visible published revision references.
+- New listings begin as draft-only records and may be archived or restored without deleting their history.
 - No payment, customer, order, account, entitlement, or private-download implementation belongs in Phase 2.
 
 ## Brand Commitments
@@ -43,9 +45,9 @@ Preserve the existing Ballai.dev name, concise voice, dark portfolio identity, g
 
 ## Evidence on Hand
 
-- Existing product descriptions and prices in `src/data.js`.
+- Existing product descriptions and prices in `src/data.js`, used as the static fallback for known portfolio items.
 - Existing games and portfolio content in the React application.
-- Local Asset Store Pictures source folders supplied for the four Unity products.
+- Local Asset Store Pictures source folders supplied for the four Unity products, migrated into the private R2 media bucket.
 - Product demo video IDs supplied in the Phase 1 brief.
 - Pixel Art Scythe UI Frame wording and live itch.io URL supplied in the Phase 1 brief.
 - No customer testimonials, sales metrics, marketplace approval, or backend services are established and none may be fabricated.

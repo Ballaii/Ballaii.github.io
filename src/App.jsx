@@ -16,7 +16,7 @@ import { formatCurrency, formatPromotionEnd, getProductLabels, getProductPricing
 
 function currentPageId() {
   const hash = window.location.hash.replace("#", "");
-  return routeIds.includes(hash) ? hash : "home";
+  return routeIds.includes(hash) || hash.startsWith("store/") ? hash : "home";
 }
 
 function useHashPage() {
@@ -41,7 +41,7 @@ function useCommerceCatalog() {
   useEffect(() => {
     const controller = new AbortController();
     fetchCommerceState(controller.signal)
-      .then((products) => setRemoteProducts(Object.fromEntries(products.map((product) => [product.id, product]))))
+      .then((products) => setRemoteProducts(Object.fromEntries(products.map((product) => [product.id, { ...product, mediaBaseUrl: "https://ballai-store-api.ballaifoktjeno.workers.dev" }]))))
       .catch((error) => {
         if (import.meta.env.DEV && error.name !== "AbortError") {
           console.info("Using static commerce fallback:", error.message);
@@ -51,13 +51,15 @@ function useCommerceCatalog() {
   }, []);
 
   return useMemo(() => {
+    const staticById = Object.fromEntries(assetProducts.map((product) => [product.id, product]));
+    const dynamicProducts = remoteProducts ? Object.values(remoteProducts).filter((product) => !staticById[product.id]).map((product) => ({ ...mergeCommerceState({ id: product.id, slug: product.slug, imageAlt: product.title, gallery: [], platforms: {}, labels: [], features: [], technicalInfo: [], detailSections: [] }, product), pageId: `store/${product.slug}` })) : [];
     const mergedAssets = assetProducts.map((product) => mergeCommerceState(product, remoteProducts?.[product.id]));
     const games = storeItems.filter((item) => item.category === "games");
     const visibleGames = remoteProducts ? games : [];
     const publicAssets = mergedAssets
       .filter((product) => product.visibility !== "hidden")
       .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
-    return { assetProducts: mergedAssets, storeItems: [...visibleGames, ...publicAssets] };
+    return { assetProducts: [...mergedAssets, ...dynamicProducts], storeItems: [...visibleGames, ...publicAssets, ...dynamicProducts] };
   }, [remoteProducts]);
 }
 

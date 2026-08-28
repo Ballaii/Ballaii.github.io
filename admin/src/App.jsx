@@ -90,7 +90,7 @@ function Metric({ label, value }) {
 
 function Dashboard({ data, products, onEdit, onEndAllSales }) {
   if (!data) return <p className="loading-state">Loading dashboard...</p>;
-  const names = Object.fromEntries(products.map((product) => [product.id, productInfo(product.id).title]));
+  const names = Object.fromEntries(products.map((product) => [product.id, productInfo(product.id, product).title]));
   return (
     <div className="workspace-stack">
       <div className="page-heading">
@@ -147,13 +147,13 @@ function Dashboard({ data, products, onEdit, onEndAllSales }) {
   );
 }
 
-function Products({ products, onEdit }) {
+function Products({ products, onEdit, onNew, onArchive, onRestore, onDelete }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [sort, setSort] = useState("order");
   const visibleProducts = useMemo(() => products
     .filter((product) => {
-      const info = productInfo(product.id);
+      const info = productInfo(product.id, product);
       const textMatch = `${info.title} ${product.id} ${info.category}`.toLowerCase().includes(query.toLowerCase());
       const state = product.draft;
       const matches = {
@@ -161,6 +161,7 @@ function Products({ products, onEdit }) {
         published: product.published.visibility === "visible",
         draft: product.hasChanges,
         hidden: state.visibility === "hidden",
+        archived: Boolean(product.archivedAt),
         sale: isPromotionActive(state.promotion),
         featured: state.featured,
         "unity-pending": state.platforms.unity.status === "pending-review",
@@ -169,24 +170,24 @@ function Products({ products, onEdit }) {
       return textMatch && matches[filter];
     })
     .sort((a, b) => {
-      if (sort === "name") return productInfo(a.id).title.localeCompare(productInfo(b.id).title);
+      if (sort === "name") return productInfo(a.id, a).title.localeCompare(productInfo(b.id, b).title);
       if (sort === "updated") return b.draft.updatedAt.localeCompare(a.draft.updatedAt);
       return a.draft.displayOrder - b.draft.displayOrder;
     }), [filter, products, query, sort]);
 
   return (
     <div className="workspace-stack">
-      <div className="page-heading"><div><h1>Products</h1><p>Draft and live commerce state. Product copy and media stay in the public repository.</p></div></div>
+      <div className="page-heading"><div><h1>Products</h1><p>Manage structured listings, commerce, and marketing media.</p></div><button className="primary-button" onClick={onNew} type="button"><Plus size={17} /> New listing</button></div>
       <div className="toolbar">
         <label className="search-field"><Search size={17} /><span className="sr-only">Search products</span><input onChange={(event) => setQuery(event.target.value)} placeholder="Search products" type="search" value={query} /></label>
         <label><span className="sr-only">Filter products</span><select onChange={(event) => setFilter(event.target.value)} value={filter}>
-          <option value="all">All</option><option value="published">Published</option><option value="draft">Draft changes</option><option value="hidden">Hidden</option><option value="sale">On sale</option><option value="featured">Featured</option><option value="unity-pending">Unity pending</option><option value="itch-available">itch.io available</option>
+          <option value="all">All</option><option value="published">Published</option><option value="draft">Draft changes</option><option value="hidden">Hidden</option><option value="archived">Archived</option><option value="sale">On sale</option><option value="featured">Featured</option><option value="unity-pending">Unity pending</option><option value="itch-available">itch.io available</option>
         </select></label>
         <label><span className="sr-only">Sort products</span><select onChange={(event) => setSort(event.target.value)} value={sort}><option value="order">Display order</option><option value="name">Name</option><option value="updated">Last updated</option></select></label>
       </div>
       <section className="product-table" aria-label="Products">
         {visibleProducts.map((product) => {
-          const info = productInfo(product.id);
+          const info = productInfo(product.id, product);
           const pricing = getProductPricing(product.draft);
           return (
             <article className="product-row" key={product.id}>
@@ -195,7 +196,7 @@ function Products({ products, onEdit }) {
               <div><span className="cell-label">Price</span><strong>{formatCurrency(pricing.currentPrice, product.draft.currency)}</strong>{pricing.promotionActive ? <small>{pricing.discountPercent}% off</small> : null}</div>
               <div><span className="cell-label">State</span><StatusPill tone={product.hasChanges ? "warning" : "success"}>{product.hasChanges ? "Draft changes" : "Live"}</StatusPill></div>
               <div><span className="cell-label">Marketplaces</span><small>itch.io: {statusLabel(product.draft.platforms.itch.status)}</small><small>Unity: {statusLabel(product.draft.platforms.unity.status)}</small></div>
-              <div className="row-actions"><button className="secondary-button" onClick={() => onEdit(product.id)} type="button">Edit</button><a className="icon-button" href={`https://ballaii.github.io/#store/${product.slug}`} rel="noopener noreferrer" target="_blank" title="View live product"><ExternalLink size={17} /></a></div>
+              <div className="row-actions"><button className="secondary-button" onClick={() => onEdit(product.id)} type="button">Edit</button>{product.archivedAt ? <button className="secondary-button" onClick={() => onRestore(product.id)} type="button">Restore</button> : <button className="secondary-button" onClick={() => onArchive(product.id)} type="button">Archive</button>}{product.isDraftOnly ? <button className="icon-button" onClick={() => onDelete(product.id)} title="Delete unpublished draft" type="button"><Trash2 size={17} /></button> : null}<a className="icon-button" href={`https://ballaii.github.io/#store/${product.slug}`} rel="noopener noreferrer" target="_blank" title="View live product"><ExternalLink size={17} /></a></div>
             </article>
           );
         })}
@@ -203,6 +204,58 @@ function Products({ products, onEdit }) {
       {!visibleProducts.length ? <EmptyState title="No matching products" text="Try another search or filter." /> : null}
     </div>
   );
+}
+
+function ListingContentFields({ content, onChange }) {
+  const update = (field, value) => onChange({ ...content, [field]: value });
+  return <fieldset className="editor-section"><legend>Listing content</legend><div className="form-grid two">
+    <label><span>Title</span><input maxLength="160" onChange={(event) => update("title", event.target.value)} value={content.title} /></label>
+    <label><span>Kind</span><input maxLength="60" onChange={(event) => update("kind", event.target.value)} value={content.kind} /></label>
+    <label><span>Category</span><input maxLength="40" onChange={(event) => update("category", event.target.value)} value={content.category} /></label>
+    <label><span>YouTube URL or video ID</span><input maxLength="200" onChange={(event) => update("youtubeVideoId", event.target.value)} placeholder="https://www.youtube.com/watch?v=..." value={content.youtubeVideoId ?? ""} /></label>
+    <label className="wide"><span>Short description</span><textarea maxLength="500" onChange={(event) => update("shortDescription", event.target.value)} rows="2" value={content.shortDescription} /></label>
+    <label className="wide"><span>Long description</span><textarea maxLength="5000" onChange={(event) => update("longDescription", event.target.value)} rows="5" value={content.longDescription} /></label>
+    <label className="wide"><span>Tags, one per line</span><textarea onChange={(event) => update("tags", event.target.value.split("\n").map((item) => item.trim()).filter(Boolean))} rows="3" value={content.tags.join("\n")} /></label>
+    <label className="wide"><span>Features, one per line</span><textarea onChange={(event) => update("features", event.target.value.split("\n").map((item) => item.trim()).filter(Boolean))} rows="4" value={content.features.join("\n")} /></label>
+  </div></fieldset>;
+}
+
+function MediaManager({ product, onChanged }) {
+  const [role, setRole] = useState("gallery");
+  const [status, setStatus] = useState("");
+  const upload = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setStatus("Uploading...");
+    try {
+      const form = new FormData();
+      form.append("productId", product.id); form.append("role", role); form.append("displayOrder", String(product.media.filter((item) => item.role === role).length)); form.append("altText", file.name.replace(/\.[^.]+$/, "")); form.append("file", file);
+      const result = await adminApi.uploadMedia(form);
+      onChanged({ ...product, media: [...product.media, result.media] }); setStatus("Upload complete");
+    } catch (error) { setStatus(error.message); }
+  };
+  const remove = async (item) => { setStatus("Removing..."); try { await adminApi.removeMedia(item.id, product.id); onChanged({ ...product, media: product.media.filter((media) => media.id !== item.id || media.role !== item.role) }); setStatus("Media removed from draft"); } catch (error) { setStatus(error.message); } };
+  const move = async (item, direction) => { const gallery = product.media.filter((media) => media.role === "gallery"); const index = gallery.findIndex((media) => media.id === item.id); const target = index + direction; if (target < 0 || target >= gallery.length) return; [gallery[index], gallery[target]] = [gallery[target], gallery[index]]; try { await adminApi.reorderMedia(product.id, gallery.map((media) => media.id)); onChanged({ ...product, media: [...product.media.filter((media) => media.role !== "gallery"), ...gallery.map((media, order) => ({ ...media, order }))] }); } catch (error) { setStatus(error.message); } };
+  return <fieldset className="editor-section"><legend>Media</legend><div className="media-upload-row"><label><span>Role</span><select onChange={(event) => setRole(event.target.value)} value={role}><option value="card">Card</option><option value="hero">Hero</option><option value="gallery">Gallery</option></select></label><label className="secondary-button"><Plus size={16} /> Upload image<input accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={upload} type="file" /></label><small>{status || "PNG, JPEG, WebP, or GIF up to 10 MB"}</small></div><div className="media-strip">{product.media.map((item) => <figure key={`${item.role}-${item.id}`}><img alt={item.alt} src={`/api/admin/media/${item.id}`} /><figcaption>{item.role} <button className="icon-button" onClick={() => remove(item)} title="Remove from draft" type="button"><Trash2 size={12} /></button>{item.role === "gallery" ? <><button className="icon-button" onClick={() => move(item, -1)} title="Move gallery image left" type="button">↑</button><button className="icon-button" onClick={() => move(item, 1)} title="Move gallery image right" type="button">↓</button></> : null}</figcaption></figure>)}</div></fieldset>;
+}
+
+function NewListing({ onCancel, onCreated }) {
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [kind, setKind] = useState("Unity Asset");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const changeTitle = (value) => { setTitle(value); if (!slug || slug === title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")) setSlug(value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80)); };
+  const create = async () => {
+    setBusy(true); setError("");
+    try {
+      const result = await adminApi.createProduct({ slug, content: { title, category: "assets", kind, shortDescription: "", longDescription: "", tags: [], features: [], technicalInfo: [], detailSections: [], youtubeVideoId: null }, basePrice: 0, currency: "USD", priceSuffix: null, labels: [], platforms: { direct: { status: "coming-soon", url: null }, itch: { status: "coming-soon", url: null }, unity: { status: "pending-review", url: null } }, promotion: { enabled: false, discountPercent: null, startsAt: null, endsAt: null } });
+      onCreated(result.product);
+    } catch (requestError) { setError(requestError.message); }
+    finally { setBusy(false); }
+  };
+  return <div className="workspace-stack editor-workspace"><div className="page-heading"><div><h1>New listing</h1><p>Create a private draft, then complete its content and media.</p></div></div><section className="editor-section"><div className="form-grid two"><label><span>Title</span><input autoFocus onChange={(event) => changeTitle(event.target.value)} value={title} /></label><label><span>Slug</span><input onChange={(event) => setSlug(event.target.value)} value={slug} /></label><label><span>Kind</span><select onChange={(event) => setKind(event.target.value)} value={kind}><option>Unity Asset</option><option>Pixel Art Asset</option><option>Game</option><option>Tool</option><option>Other</option></select></label></div>{error ? <div className="error-banner" role="alert">{error}</div> : null}<div className="editor-actions"><button className="secondary-button" onClick={onCancel} type="button">Cancel</button><button className="primary-button" disabled={busy || !title.trim() || !slug.trim()} onClick={create} type="button"><Plus size={17} /> {busy ? "Creating..." : "Create draft"}</button></div></section></div>;
 }
 
 function PromotionFields({ draft, setDraft }) {
@@ -224,7 +277,7 @@ function PromotionFields({ draft, setDraft }) {
 }
 
 function ProductPreview({ product, draft, simulatedNow, testMode }) {
-  const info = productInfo(product.id);
+  const info = productInfo(product.id, product);
   const now = simulatedNow ? new Date(toUtcIsoFromBucharest(simulatedNow)) : new Date();
   const pricing = getProductPricing(draft, now);
   const labels = getProductLabels(draft, now);
@@ -234,8 +287,8 @@ function ProductPreview({ product, draft, simulatedNow, testMode }) {
       <img src={info.image} alt="" />
       <div className="preview-copy">
         <div className="label-row">{labels.map((label) => <span key={label}>{label}</span>)}</div>
-        <h2>{info.title}</h2>
-        <p>{info.category}</p>
+        <h2>{product.content?.title ?? info.title}</h2>
+        <p>{product.content?.kind ?? info.category}</p>
         <div className="preview-price">{pricing.promotionActive ? <s>{formatCurrency(pricing.basePrice, draft.currency)}</s> : null}<strong>{formatCurrency(pricing.currentPrice, draft.currency)}</strong>{draft.priceSuffix ? <span>{draft.priceSuffix}</span> : null}</div>
         {pricing.promotionActive && draft.promotion.endsAt ? <small>Sale ends {formatBucharest(draft.promotion.endsAt)}</small> : null}
         <div className="marketplace-preview">{platformNames.map((name) => {
@@ -259,7 +312,7 @@ function PublishSummary({ product, onCancel, onPublish, busy }) {
   return (
     <div className="dialog-backdrop" role="presentation">
       <section aria-labelledby="publish-title" aria-modal="true" className="confirm-dialog" role="dialog">
-        <h2 id="publish-title">Publish {productInfo(product.id).title}?</h2>
+        <h2 id="publish-title">Publish {productInfo(product.id, product).title}?</h2>
         <p>This atomically replaces the live commerce state with the saved draft.</p>
         <div className="change-list">{differences.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
         <div className="dialog-actions"><button className="secondary-button" disabled={busy} onClick={onCancel} type="button">Cancel</button><button className="primary-button" disabled={busy} onClick={onPublish} type="button"><Send size={17} />{busy ? "Publishing..." : "Publish"}</button></div>
@@ -277,9 +330,10 @@ function ProductEditor({ product, onBack, onChanged }) {
   const [showPublish, setShowPublish] = useState(false);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [busy, setBusy] = useState(false);
-  const info = productInfo(product.id);
+  const [content, setContent] = useState(() => clone(product.content));
+  const info = productInfo(product.id, product);
   const comparableDraft = ({ revisionToken: _revisionToken, updatedAt: _updatedAt, ...value }) => value;
-  const hasLocalChanges = JSON.stringify(comparableDraft(draft)) !== JSON.stringify(comparableDraft(product.draft));
+  const hasLocalChanges = JSON.stringify(comparableDraft(draft)) !== JSON.stringify(comparableDraft(product.draft)) || JSON.stringify(content) !== JSON.stringify(product.content);
 
   const update = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
   const addLabel = () => {
@@ -291,8 +345,8 @@ function ProductEditor({ product, onBack, onChanged }) {
     setBusy(true); setStatus({ type: "", message: "Saving draft..." });
     try {
       const { revisionToken: _revisionToken, updatedAt: _updatedAt, ...payload } = draft;
-      const result = await adminApi.saveDraft(product.id, payload, product.draft.revisionToken);
-      setDraft(clone(result.product.draft)); onChanged(result.product);
+      const result = await adminApi.saveDraft(product.id, { ...payload, content }, product.draft.revisionToken);
+      setDraft(clone(result.product.draft)); setContent(clone(result.product.content)); onChanged(result.product);
       setStatus({ type: "success", message: "Draft saved" });
     } catch (error) { setStatus({ type: "error", message: error.message }); }
     finally { setBusy(false); }
@@ -333,6 +387,8 @@ function ProductEditor({ product, onBack, onChanged }) {
       {status.message ? <div className={`inline-status ${status.type}`} role="status">{status.message}</div> : null}
       <div className="editor-layout">
         <div className="editor-form">
+          <ListingContentFields content={content} onChange={setContent} />
+          <MediaManager onChanged={onChanged} product={product} />
           <fieldset className="editor-section"><legend>General store settings</legend><div className="form-grid three">
             <label><span>Visibility</span><select onChange={(event) => update("visibility", event.target.value)} value={draft.visibility}><option value="visible">Published</option><option value="hidden">Hidden</option></select></label>
             <label><span>Display order</span><input onChange={(event) => update("displayOrder", Number(event.target.value))} type="number" value={draft.displayOrder} /></label>
@@ -367,7 +423,7 @@ function Promotions({ products, onEdit }) {
   }
   return (
     <div className="workspace-stack"><div className="page-heading"><div><h1>Promotions</h1><p>Published promotion schedules in {bucharestTimeZone}.</p></div></div>
-      {Object.entries(groups).map(([status, items]) => <section className="workspace-panel" key={status}><div className="panel-heading"><h2>{statusLabel(status)}</h2><StatusPill tone={status === "active" ? "sale" : "neutral"}>{items.length}</StatusPill></div>{items.length ? <div className="promotion-table">{items.map((product) => { const promotion = product.published.promotion; const pricing = getProductPricing(product.published); return <div className="promotion-record" key={product.id}><div><strong>{productInfo(product.id).title}</strong><small>{formatCurrency(product.published.basePrice, product.published.currency)} base</small></div><strong>{promotion.discountPercent}%</strong><span>{formatCurrency(pricing.currentPrice, product.published.currency)}</span><span><small>{formatBucharest(promotion.startsAt)}</small><small>{formatBucharest(promotion.endsAt)}</small></span><button className="secondary-button" onClick={() => onEdit(product.id)} type="button">Edit</button></div>; })}</div> : <EmptyState title={`No ${status} promotions`} text="Promotion schedules will appear here automatically." />}</section>)}
+      {Object.entries(groups).map(([status, items]) => <section className="workspace-panel" key={status}><div className="panel-heading"><h2>{statusLabel(status)}</h2><StatusPill tone={status === "active" ? "sale" : "neutral"}>{items.length}</StatusPill></div>{items.length ? <div className="promotion-table">{items.map((product) => { const promotion = product.published.promotion; const pricing = getProductPricing(product.published); return <div className="promotion-record" key={product.id}><div><strong>{productInfo(product.id, product).title}</strong><small>{formatCurrency(product.published.basePrice, product.published.currency)} base</small></div><strong>{promotion.discountPercent}%</strong><span>{formatCurrency(pricing.currentPrice, product.published.currency)}</span><span><small>{formatBucharest(promotion.startsAt)}</small><small>{formatBucharest(promotion.endsAt)}</small></span><button className="secondary-button" onClick={() => onEdit(product.id)} type="button">Edit</button></div>; })}</div> : <EmptyState title={`No ${status} promotions`} text="Promotion schedules will appear here automatically." />}</section>)}
     </div>
   );
 }
@@ -403,6 +459,7 @@ export default function App() {
   const [analyticsRange, setAnalyticsRange] = useState("30");
   const [actorEmail, setActorEmail] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [newListing, setNewListing] = useState(false);
   const [error, setError] = useState("");
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const [emergencyBusy, setEmergencyBusy] = useState(false);
@@ -426,6 +483,10 @@ export default function App() {
     adminApi.dashboard().then(setDashboard).catch(() => {});
   };
   const openEditor = (productId) => { setEditingId(productId); setSection("products"); };
+  const createListing = (product) => { setProducts((current) => [...current, product]); setNewListing(false); setEditingId(product.id); };
+  const archiveListing = async (productId) => { if (!window.confirm("Archive this listing? It will be hidden but retained.")) return; try { const result = await adminApi.archive(productId); updateProduct(result.product); } catch (requestError) { setError(requestError.message); } };
+  const restoreListing = async (productId) => { try { const result = await adminApi.restore(productId); updateProduct(result.product); } catch (requestError) { setError(requestError.message); } };
+  const deleteListing = async (productId) => { if (!window.confirm("Permanently delete this unpublished draft? This cannot be undone.")) return; try { await adminApi.deleteDraft(productId); setProducts((current) => current.filter((product) => product.id !== productId)); } catch (requestError) { setError(requestError.message); } };
   const endSales = async () => {
     setEmergencyBusy(true);
     try { await adminApi.endAllSales(); setEmergencyOpen(false); await loadCore(); }
@@ -437,7 +498,7 @@ export default function App() {
     <div className="admin-shell">
       <header className="admin-header"><button className="mobile-menu" onClick={() => setMobileNav((open) => !open)} title="Toggle navigation" type="button">{mobileNav ? <X /> : <Menu />}</button><a className="brand" href="/">BALLAI ADMIN</a><div className="header-meta"><StatusPill tone="success">Production</StatusPill><span>{actorEmail}</span></div></header>
       <aside className={`admin-sidebar ${mobileNav ? "open" : ""}`}><nav aria-label="Administration sections">{navigation.map((item) => { const Icon = item.icon; return <button className={section === item.id ? "active" : ""} key={item.id} onClick={() => { setSection(item.id); setEditingId(null); setMobileNav(false); }} type="button"><Icon size={19} /><span>{item.label}</span></button>; })}</nav><div className="future-nav"><span>Later</span><small>Orders</small><small>Customers</small><small>Downloads</small><small>Support</small></div></aside>
-      <main className="admin-main"><ErrorBanner message={error} onRetry={loadCore} />{editingProduct ? <ProductEditor key={`${editingProduct.id}-${editingProduct.draft.updatedAt}`} onBack={() => setEditingId(null)} onChanged={updateProduct} product={editingProduct} /> : section === "dashboard" ? <Dashboard data={dashboard} onEdit={openEditor} onEndAllSales={() => setEmergencyOpen(true)} products={products} /> : section === "products" ? <Products onEdit={openEditor} products={products} /> : section === "promotions" ? <Promotions onEdit={openEditor} products={products} /> : <Analytics data={analytics} onRange={setAnalyticsRange} range={analyticsRange} />}</main>
+      <main className="admin-main"><ErrorBanner message={error} onRetry={loadCore} />{newListing ? <NewListing onCancel={() => setNewListing(false)} onCreated={createListing} /> : editingProduct ? <ProductEditor key={`${editingProduct.id}-${editingProduct.draft.updatedAt}`} onBack={() => setEditingId(null)} onChanged={updateProduct} product={editingProduct} /> : section === "dashboard" ? <Dashboard data={dashboard} onEdit={openEditor} onEndAllSales={() => setEmergencyOpen(true)} products={products} /> : section === "products" ? <Products onArchive={archiveListing} onDelete={deleteListing} onEdit={openEditor} onNew={() => setNewListing(true)} onRestore={restoreListing} products={products} /> : section === "promotions" ? <Promotions onEdit={openEditor} products={products} /> : <Analytics data={analytics} onRange={setAnalyticsRange} range={analyticsRange} />}</main>
       {emergencyOpen ? <EmergencyDialog busy={emergencyBusy} onCancel={() => setEmergencyOpen(false)} onConfirm={endSales} /> : null}
     </div>
   );

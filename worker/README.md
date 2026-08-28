@@ -1,18 +1,21 @@
 # Ballai Store API
 
-## Phase 2 implementation
+## Phase 2.5 implementation
 
 The Worker exposes public store endpoints only:
 
 - `GET /health`
 - `GET /products`
+- `GET /catalog`
+- `GET /catalog/:slug`
+- `GET /media/:id`
 - `POST /analytics/event`
 
 Privileged mutation routes remain absent from the public Worker. They are implemented as same-origin Cloudflare Pages Functions under `admin/functions/api/admin`, where every request verifies the Cloudflare Access JWT before reading or writing D1.
 
 ## Draft and published state
 
-`products` owns stable identity only. `product_revisions` owns mutable commerce fields and allows exactly one `draft` and one `published` revision per product. Platforms, labels, and promotions belong to a revision, so draft edits can be previewed without changing public data. A later publish transaction will copy the draft revision and its child rows into the published revision.
+`products` owns stable identity and archive state. `product_revisions` owns mutable commerce fields and listing content, allowing exactly one `draft` and one `published` revision per product. Platforms, labels, promotions, and media references belong to a revision, so draft edits can be previewed without changing public data. Publishing copies the complete draft revision and its child rows into the published revision.
 
 The public endpoint queries only visible revisions at `stage = 'published'`. The admin reads draft and published revisions separately, previews draft changes, and copies a complete draft revision into the published revision in one D1 batch. Test mode accepts a request-scoped preview time and never writes that simulated time to D1.
 
@@ -20,7 +23,7 @@ Promotion times are stored as unambiguous UTC ISO timestamps. The future admin c
 
 ## Static and remote ownership
 
-The GitHub repository remains the source of truth for titles, descriptions, screenshots, videos, features, and technical information. D1 owns price, currency, labels, visibility, featured state, order, marketplace state, promotions, and timestamps.
+The GitHub repository remains the source of truth for the portfolio shell and static fallback. D1 owns dynamic listing content, price, currency, labels, visibility, featured state, order, marketplace state, promotions, media references, and timestamps. R2 stores private marketing media; random media IDs are not public unless referenced by a visible published revision.
 
 ## Analytics
 
@@ -28,7 +31,7 @@ The GitHub repository remains the source of truth for titles, descriptions, scre
 
 ## Administration
 
-The protected Pages application supports product search and filtering, draft editing, atomic publishing, labels, marketplace state, promotion presets and schedules, Europe/Bucharest time conversion, test-mode previews, analytics summaries, audit history, and a two-step emergency action that ends all live and draft sales.
+The protected Pages application supports product creation, search and filtering, draft editing, structured listing content, R2 media upload and removal, gallery reordering, atomic publishing, archiving and restoration, labels, marketplace state, promotion presets and schedules, Europe/Bucharest time conversion, test-mode previews, analytics summaries, audit history, and a two-step emergency action that ends all live and draft sales.
 
 ## Local validation
 

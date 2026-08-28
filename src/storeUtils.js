@@ -66,8 +66,23 @@ export function formatPromotionEnd(endsAt) {
 
 export function mergeCommerceState(staticProduct, remoteState) {
   if (!remoteState) return { ...staticProduct, visibility: "hidden" };
+  const remoteGallery = Array.isArray(remoteState.media)
+    ? remoteState.media.filter((item) => item.role === "gallery").map((item) => ({ src: `${remoteState.mediaBaseUrl}/media/${item.id}`, alt: item.alt || staticProduct.imageAlt }))
+    : [];
   return {
     ...staticProduct,
+    ...(remoteState.title ? {
+      title: remoteState.title,
+      category: remoteState.category,
+      kind: remoteState.kind,
+      description: remoteState.shortDescription,
+      longDescription: remoteState.longDescription,
+      tags: remoteState.tags,
+      features: remoteState.features,
+      technicalInfo: (remoteState.technicalInfo ?? []).map((item) => [item.label, item.value]),
+      detailSections: remoteState.detailSections,
+      youtubeVideoId: remoteState.youtubeVideoId,
+    } : {}),
     basePrice: remoteState.basePrice,
     currency: remoteState.currency,
     displayOrder: remoteState.displayOrder,
@@ -78,5 +93,10 @@ export function mergeCommerceState(staticProduct, remoteState) {
     promotion: remoteState.promotion ?? staticProduct.promotion,
     updatedAt: remoteState.updatedAt,
     visibility: remoteState.visibility,
+    ...(Array.isArray(remoteState.media) && remoteState.media.length ? {
+      image: `${remoteState.mediaBaseUrl}/media/${(remoteState.media.find((item) => item.role === "card") ?? remoteState.media.find((item) => item.role === "hero"))?.id}`,
+      heroImage: `${remoteState.mediaBaseUrl}/media/${(remoteState.media.find((item) => item.role === "hero") ?? remoteState.media.find((item) => item.role === "card"))?.id}`,
+      gallery: remoteGallery.length ? remoteGallery : staticProduct.gallery,
+    } : {}),
   };
 }

@@ -5,7 +5,7 @@ export async function fetchCommerceState(signal) {
   if (!commerceApiUrl) {
     throw new Error("Commerce API URL is not configured");
   }
-  const response = await fetch(`${commerceApiUrl}/products`, { signal });
+  const response = await fetch(`${commerceApiUrl}/catalog`, { signal });
   if (!response.ok) {
     throw new Error(`Commerce API returned ${response.status}`);
   }

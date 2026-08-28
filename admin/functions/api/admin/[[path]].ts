@@ -1,15 +1,23 @@
 import { requireAccessIdentity, type AccessEnv } from "../../_lib/auth";
 import {
   discardDraft,
+  archiveProduct,
+  createProduct,
+  deleteDraftProduct,
   endAllSales,
   listProducts,
   publishDraft,
+  restoreProduct,
+  removeDraftMedia,
+  reorderDraftMedia,
   saveDraft,
 } from "../../_lib/commerce";
 import { json, readJson } from "../../_lib/responses";
+import { mediaObjectKey, validateUpload } from "../../_lib/media";
 
 interface Env extends AccessEnv {
   DB: D1Database;
+  MEDIA_BUCKET: R2Bucket;
 }
 
 interface AuditRow {
@@ -107,24 +115,89 @@ async function getDashboard(db: D1Database): Promise<object> {
 }
 
 function matchProductAction(path: string): { id: string; action: string } | null {
-  const match = path.match(/^\/api\/admin\/products\/([^/]+)\/(draft|publish|discard)$/);
+  const match = path.match(/^\/api\/admin\/products\/([^/]+)\/(draft|publish|discard|archive|restore|delete)$/);
   return match ? { id: decodeURIComponent(match[1]), action: match[2] } : null;
 }
 
 function requireSameOriginMutation(request: Request): void {
-  const origin = request.headers.get("Origin");
-  if (!origin || origin !== new URL(request.url).origin) {
-    throw new Error("Origin not allowed");
-  }
+  requireSameOriginRequest(request);
   const contentType = request.headers.get("Content-Type")?.split(";", 1)[0].trim().toLowerCase();
   if (contentType !== "application/json") {
     throw new Error("Mutations require JSON");
   }
 }
 
+function requireSameOriginRequest(request: Request): void {
+  const origin = request.headers.get("Origin");
+  if (!origin || origin !== new URL(request.url).origin) {
+    throw new Error("Origin not allowed");
+  }
+}
+
+async function uploadMedia(request: Request, env: Env, actorEmail: string): Promise<Response> {
+  const form = await request.formData();
+  const productId = form.get("productId");
+  const role = form.get("role");
+  const altText = form.get("altText");
+  const order = Number(form.get("displayOrder") ?? 0);
+  const file = form.get("file");
+  if (typeof productId !== "string" || !["card", "hero", "gallery"].includes(String(role)) || typeof altText !== "string" || !Number.isInteger(order) || order < 0 || order > 1000 || !(file instanceof File)) {
+    return json({ error: "Invalid media upload" }, 400);
+  }
+  if (file.name.length > 200 || altText.length > 500) return json({ error: "Media metadata is too long" }, 400);
+  const product = (await listProducts(env.DB)).find((item) => item.id === productId);
+  if (!product) return json({ error: "Product not found" }, 404);
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const info = validateUpload(file, bytes);
+  const mediaId = crypto.randomUUID();
+  const key = mediaObjectKey(productId, mediaId, info.mimeType);
+  await env.MEDIA_BUCKET.put(key, bytes, { httpMetadata: { contentType: info.mimeType } });
+  try {
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO media_objects (id, r2_key, mime_type, width, height, byte_size) VALUES (?, ?, ?, ?, ?, ?)").bind(mediaId, key, info.mimeType, info.width, info.height, bytes.byteLength),
+      env.DB.prepare("INSERT INTO product_revision_media (revision_key, media_id, role, display_order, alt_text) VALUES (?, ?, ?, ?, ?)").bind(`${productId}:draft`, mediaId, role, order, altText),
+      env.DB.prepare("INSERT INTO audit_log (id, product_id, action, actor_email, before_json, after_json, occurred_at_utc) VALUES (?, ?, 'media_uploaded', ?, NULL, ?, ?)").bind(crypto.randomUUID(), productId, actorEmail, JSON.stringify({ mediaId, role, order }), new Date().toISOString()),
+    ]);
+  } catch (error) {
+    try { await env.MEDIA_BUCKET.delete(key); } catch { /* scheduled orphan cleanup is the fallback */ }
+    throw error;
+  }
+  return json({ media: { id: mediaId, role, order, alt: altText, width: info.width, height: info.height, mimeType: info.mimeType } }, 201);
+}
+
+async function readAdminMedia(request: Request, env: Env, mediaId: string): Promise<Response> {
+  const row = await env.DB.prepare("SELECT r2_key, mime_type FROM media_objects WHERE id = ?").bind(mediaId).first<{ r2_key: string; mime_type: string }>();
+  if (!row) return json({ error: "Media not found" }, 404);
+  const object = await env.MEDIA_BUCKET.get(row.r2_key);
+  if (!object) return json({ error: "Media not found" }, 404);
+  const headers = new Headers({ "Content-Type": row.mime_type, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer" });
+  object.writeHttpMetadata(headers);
+  return new Response(object.body, { headers });
+}
+
 async function route(request: Request, env: Env, actorEmail: string): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
+  if (request.method === "GET" && path.startsWith("/api/admin/media/")) {
+    return await readAdminMedia(request, env, decodeURIComponent(path.slice("/api/admin/media/".length)));
+  }
+  const mediaAction = path.match(/^\/api\/admin\/media\/([^/]+)\/(remove|reorder)$/);
+  if (mediaAction && request.method === "POST") {
+    requireSameOriginMutation(request);
+    const body = await readJson(request) as { productId?: unknown; mediaIds?: unknown };
+    if (typeof body.productId !== "string") return json({ error: "Product is required" }, 400);
+    if (mediaAction[2] === "remove") await removeDraftMedia(env.DB, mediaAction[1], body.productId, actorEmail);
+    else await reorderDraftMedia(env.DB, body.productId, Array.isArray(body.mediaIds) ? body.mediaIds : [], actorEmail);
+    return json({ ok: true });
+  }
+  if (request.method === "POST" && path === "/api/admin/media/upload") {
+    requireSameOriginRequest(request);
+    return await uploadMedia(request, env, actorEmail);
+  }
+  if (request.method === "POST" && path === "/api/admin/products") {
+    requireSameOriginMutation(request);
+    return json({ product: await createProduct(env.DB, await readJson(request), actorEmail) }, 201);
+  }
   if (request.method === "GET" && path === "/api/admin/health") {
     return json({ ok: true, service: "ballai-admin-api", actorEmail });
   }
@@ -159,6 +232,14 @@ async function route(request: Request, env: Env, actorEmail: string): Promise<Re
     const body = await readJson(request) as { draftRevisionToken?: unknown };
     if (typeof body.draftRevisionToken !== "string") return json({ error: "Draft version is required" }, 400);
     return json({ product: await discardDraft(env.DB, productAction.id, body.draftRevisionToken, actorEmail) });
+  }
+  if (productAction && request.method === "POST" && ["archive", "restore"].includes(productAction.action)) {
+    return json({ product: productAction.action === "archive" ? await archiveProduct(env.DB, productAction.id, actorEmail) : await restoreProduct(env.DB, productAction.id, actorEmail) });
+  }
+  if (productAction && request.method === "DELETE" && productAction.action === "delete") {
+    requireSameOriginMutation(request);
+    await deleteDraftProduct(env.DB, env.MEDIA_BUCKET, productAction.id, actorEmail);
+    return json({ deleted: true });
   }
   if (request.method === "POST" && path === "/api/admin/sales/end-all") {
     return json({ affectedProducts: await endAllSales(env.DB, actorEmail) });

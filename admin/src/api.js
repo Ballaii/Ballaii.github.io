@@ -14,8 +14,11 @@ async function request(path, options = {}) {
 }
 
 export const adminApi = {
+  archive: (productId) => request(`/products/${encodeURIComponent(productId)}/archive`, { method: "POST" }),
   analytics: (range) => request(`/analytics?range=${range}`),
   dashboard: () => request("/dashboard"),
+  createProduct: (payload) => request("/products", { method: "POST", body: JSON.stringify(payload) }),
+  deleteDraft: (productId) => request(`/products/${encodeURIComponent(productId)}/delete`, { method: "DELETE" }),
   discardDraft: (productId, draftRevisionToken) => request(`/products/${encodeURIComponent(productId)}/discard`, {
     method: "POST", body: JSON.stringify({ draftRevisionToken }),
   }),
@@ -26,8 +29,17 @@ export const adminApi = {
     method: "POST",
     body: JSON.stringify({ draftRevisionToken }),
   }),
+  restore: (productId) => request(`/products/${encodeURIComponent(productId)}/restore`, { method: "POST" }),
+  removeMedia: (mediaId, productId) => request(`/media/${encodeURIComponent(mediaId)}/remove`, { method: "POST", body: JSON.stringify({ productId }) }),
+  reorderMedia: (productId, mediaIds) => request("/media/reorder", { method: "POST", body: JSON.stringify({ productId, mediaIds }) }),
   saveDraft: (productId, draft, expectedDraftRevisionToken) => request(`/products/${encodeURIComponent(productId)}/draft`, {
     method: "PUT",
     body: JSON.stringify({ draft, expectedDraftRevisionToken }),
   }),
+  uploadMedia: async (formData) => {
+    const response = await fetch(`${apiRoot}/media/upload`, { method: "POST", credentials: "same-origin", body: formData });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || `Request failed with status ${response.status}`);
+    return body;
+  },
 };

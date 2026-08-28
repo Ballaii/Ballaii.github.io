@@ -2,6 +2,7 @@ interface Env {
   ANALYTICS_HASH_SALT: string;
   DB: D1Database;
   ANALYTICS_RATE_LIMITER: RateLimit;
+  MEDIA_BUCKET: R2Bucket;
 }
 
 interface ProductRow {
@@ -14,6 +15,7 @@ interface ProductRow {
   featured: number;
   display_order: number;
   updated_at: string;
+  content_json: string;
 }
 
 interface PlatformRow {
@@ -34,6 +36,14 @@ interface PromotionRow {
   discount_percent: number | null;
   starts_at_utc: string | null;
   ends_at_utc: string | null;
+}
+
+interface MediaRow {
+  product_id: string;
+  media_id: string;
+  role: "card" | "hero" | "gallery";
+  display_order: number;
+  alt_text: string;
 }
 
 type AnalyticsEventName =
@@ -113,6 +123,7 @@ function mapPublishedProduct(
   platformRows: PlatformRow[],
   labelRows: LabelRow[],
   promotionRows: PromotionRow[],
+  mediaRows: MediaRow[],
 ): object {
   const promotion = promotionRows.find((row) => row.product_id === product.id);
   const platforms = Object.fromEntries(
@@ -140,31 +151,45 @@ function mapPublishedProduct(
         }
       : { enabled: false, discountPercent: null, startsAt: null, endsAt: null },
     updatedAt: product.updated_at,
+    ...parseContent(product.content_json),
+    media: mediaRows
+      .filter((media) => media.product_id === product.id)
+      .sort((a, b) => a.display_order - b.display_order)
+      .map((media) => ({ id: media.media_id, role: media.role, order: media.display_order, alt: media.alt_text })),
   };
 }
 
+function parseContent(value: string): Record<string, unknown> {
+  try {
+    const content = JSON.parse(value);
+    return content && typeof content === "object" && !Array.isArray(content) ? content : {};
+  } catch {
+    return {};
+  }
+}
+
 async function getPublishedProducts(request: Request, env: Env): Promise<Response> {
-  const [products, platforms, labels, promotions] = await env.DB.batch([
+  const [products, platforms, labels, promotions, media] = await env.DB.batch([
     env.DB.prepare(`
       SELECT p.id, p.slug, r.base_price, r.currency, r.price_suffix,
-             r.visibility, r.featured, r.display_order, r.updated_at
+             r.visibility, r.featured, r.display_order, r.updated_at, r.content_json
       FROM products p
       JOIN product_revisions r ON r.product_id = p.id
-      WHERE r.stage = 'published' AND r.visibility = 'visible'
+      WHERE r.stage = 'published' AND r.visibility = 'visible' AND p.archived_at IS NULL
       ORDER BY r.display_order ASC, p.id ASC
     `),
     env.DB.prepare(`
       SELECT r.product_id, pp.platform, pp.status, pp.url
       FROM product_platforms pp
       JOIN product_revisions r ON r.revision_key = pp.revision_key
-      WHERE r.stage = 'published' AND r.visibility = 'visible'
+      WHERE r.stage = 'published' AND r.visibility = 'visible' AND EXISTS (SELECT 1 FROM products p WHERE p.id = r.product_id AND p.archived_at IS NULL)
       ORDER BY pp.platform ASC
     `),
     env.DB.prepare(`
       SELECT r.product_id, pl.label
       FROM product_labels pl
       JOIN product_revisions r ON r.revision_key = pl.revision_key
-      WHERE r.stage = 'published' AND r.visibility = 'visible'
+      WHERE r.stage = 'published' AND r.visibility = 'visible' AND EXISTS (SELECT 1 FROM products p WHERE p.id = r.product_id AND p.archived_at IS NULL)
       ORDER BY pl.created_at ASC, pl.label ASC
     `),
     env.DB.prepare(`
@@ -172,16 +197,61 @@ async function getPublishedProducts(request: Request, env: Env): Promise<Respons
              pr.starts_at_utc, pr.ends_at_utc
       FROM promotions pr
       JOIN product_revisions r ON r.revision_key = pr.revision_key
-      WHERE r.stage = 'published' AND r.visibility = 'visible'
+      WHERE r.stage = 'published' AND r.visibility = 'visible' AND EXISTS (SELECT 1 FROM products p WHERE p.id = r.product_id AND p.archived_at IS NULL)
+    `),
+    env.DB.prepare(`
+      SELECT r.product_id, m.media_id, m.role, m.display_order, m.alt_text
+      FROM product_revision_media m
+      JOIN product_revisions r ON r.revision_key = m.revision_key
+      JOIN products p ON p.id = r.product_id
+      WHERE r.stage = 'published' AND r.visibility = 'visible' AND p.archived_at IS NULL
     `),
   ]);
   const platformRows = platforms.results as unknown as PlatformRow[];
   const labelRows = labels.results as unknown as LabelRow[];
   const promotionRows = promotions.results as unknown as PromotionRow[];
+  const mediaRows = media.results as unknown as MediaRow[];
   const responseProducts = (products.results as unknown as ProductRow[]).map((product) =>
-    mapPublishedProduct(product, platformRows, labelRows, promotionRows),
+    mapPublishedProduct(product, platformRows, labelRows, promotionRows, mediaRows),
   );
   return jsonResponse(request, { products: responseProducts }, 200, "public, max-age=30, must-revalidate");
+}
+
+async function getPublishedProductBySlug(request: Request, env: Env, slug: string): Promise<Response> {
+  const products = await getPublishedCatalogRows(env, slug);
+  if (!products.length) return jsonResponse(request, { error: "Product not found" }, 404);
+  return jsonResponse(request, { product: products[0] }, 200, "public, max-age=30, must-revalidate");
+}
+
+async function getPublishedCatalogRows(env: Env, slug?: string): Promise<object[]> {
+  const slugClause = slug ? "AND (p.slug = ? OR EXISTS (SELECT 1 FROM product_slug_aliases a WHERE a.old_slug = ? AND a.product_id = p.id))" : "";
+  const bind = slug ? [slug, slug] : [];
+  const [products, platforms, labels, promotions, media] = await env.DB.batch([
+    env.DB.prepare(`SELECT p.id, p.slug, r.base_price, r.currency, r.price_suffix, r.visibility, r.featured, r.display_order, r.updated_at, r.content_json
+      FROM products p JOIN product_revisions r ON r.product_id = p.id
+      WHERE r.stage = 'published' AND r.visibility = 'visible' AND p.archived_at IS NULL ${slugClause}
+      ORDER BY r.display_order ASC, p.id ASC`).bind(...bind),
+    env.DB.prepare(`SELECT r.product_id, pp.platform, pp.status, pp.url FROM product_platforms pp JOIN product_revisions r ON r.revision_key = pp.revision_key JOIN products p ON p.id = r.product_id WHERE r.stage = 'published' AND r.visibility = 'visible' AND p.archived_at IS NULL`),
+    env.DB.prepare(`SELECT r.product_id, pl.label FROM product_labels pl JOIN product_revisions r ON r.revision_key = pl.revision_key JOIN products p ON p.id = r.product_id WHERE r.stage = 'published' AND r.visibility = 'visible' AND p.archived_at IS NULL`),
+    env.DB.prepare(`SELECT r.product_id, pr.enabled, pr.discount_percent, pr.starts_at_utc, pr.ends_at_utc FROM promotions pr JOIN product_revisions r ON r.revision_key = pr.revision_key JOIN products p ON p.id = r.product_id WHERE r.stage = 'published' AND r.visibility = 'visible' AND p.archived_at IS NULL`),
+    env.DB.prepare(`SELECT r.product_id, m.media_id, m.role, m.display_order, m.alt_text FROM product_revision_media m JOIN product_revisions r ON r.revision_key = m.revision_key JOIN products p ON p.id = r.product_id WHERE r.stage = 'published' AND r.visibility = 'visible' AND p.archived_at IS NULL`),
+  ]);
+  const platformRows = platforms.results as unknown as PlatformRow[];
+  const labelRows = labels.results as unknown as LabelRow[];
+  const promotionRows = promotions.results as unknown as PromotionRow[];
+  const mediaRows = media.results as unknown as MediaRow[];
+  return (products.results as unknown as ProductRow[]).map((product) => mapPublishedProduct(product, platformRows, labelRows, promotionRows, mediaRows));
+}
+
+async function servePublishedMedia(request: Request, env: Env, mediaId: string): Promise<Response> {
+  const row = await env.DB.prepare(`SELECT m.r2_key, m.mime_type FROM media_objects m JOIN product_revision_media rm ON rm.media_id = m.id JOIN product_revisions r ON r.revision_key = rm.revision_key JOIN products p ON p.id = r.product_id WHERE m.id = ? AND r.stage = 'published' AND r.visibility = 'visible' AND p.archived_at IS NULL LIMIT 1`).bind(mediaId).first<{ r2_key: string; mime_type: string }>();
+  if (!row) return jsonResponse(request, { error: "Media not found" }, 404);
+  const object = await env.MEDIA_BUCKET.get(row.r2_key);
+  if (!object) return jsonResponse(request, { error: "Media not found" }, 404);
+  const headers = new Headers({ "Content-Type": row.mime_type, "Cache-Control": "public, max-age=31536000, immutable", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer" });
+  object.writeHttpMetadata(headers);
+  headers.set("ETag", object.httpEtag);
+  return new Response(object.body, { headers });
 }
 
 function isShortText(value: unknown, maximumLength: number): value is string {
@@ -256,6 +326,12 @@ async function cleanupAnalytics(env: Env, now: Date): Promise<void> {
     env.DB.prepare("DELETE FROM analytics_rate_limits WHERE minute_bucket < ?").bind(staleBucket),
     env.DB.prepare("DELETE FROM analytics_events WHERE occurred_at_utc < ?").bind(analyticsCutoff),
   ]);
+  const orphanCutoff = new Date(now.getTime() - 24 * 60 * 60_000).toISOString();
+  const orphans = await env.DB.prepare(`SELECT id, r2_key FROM media_objects WHERE orphaned_at IS NOT NULL AND orphaned_at < ? AND NOT EXISTS (SELECT 1 FROM product_revision_media WHERE media_id = media_objects.id) LIMIT 100`).bind(orphanCutoff).all<{ id: string; r2_key: string }>();
+  if (orphans.results.length) {
+    await Promise.all(orphans.results.map((row) => env.MEDIA_BUCKET.delete(row.r2_key)));
+    await env.DB.batch(orphans.results.map((row) => env.DB.prepare("DELETE FROM media_objects WHERE id = ? AND orphaned_at IS NOT NULL AND NOT EXISTS (SELECT 1 FROM product_revision_media WHERE media_id = ?)").bind(row.id, row.id)));
+  }
 }
 
 async function exceedsRateLimit(request: Request, env: Env): Promise<boolean> {
@@ -327,6 +403,15 @@ export default {
       } catch {
         return jsonResponse(request, { error: "Product data is temporarily unavailable" }, 503);
       }
+    }
+    if (request.method === "GET" && path === "/catalog") {
+      return jsonResponse(request, { products: await getPublishedCatalogRows(env) }, 200, "public, max-age=30, must-revalidate");
+    }
+    if (request.method === "GET" && path.startsWith("/catalog/")) {
+      return await getPublishedProductBySlug(request, env, decodeURIComponent(path.slice("/catalog/".length)));
+    }
+    if (request.method === "GET" && path.startsWith("/media/")) {
+      return await servePublishedMedia(request, env, decodeURIComponent(path.slice("/media/".length)));
     }
     if (request.method === "POST" && path === "/analytics/event") {
       try {

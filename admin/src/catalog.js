@@ -7,6 +7,11 @@ export const catalog = {
   "dark-pixel-keyboard-glyph-pack": { title: "Dark Pixel Keyboard Glyph Pack", image: "/assets/keyboard-glyph-pack.webp", category: "Pixel Art Asset" },
 };
 
-export function productInfo(productId) {
-  return catalog[productId] ?? { title: productId, image: "", category: "Asset" };
+export function productInfo(productId, product) {
+  const card = product?.media?.find((item) => item.role === "card");
+  return catalog[productId] ?? {
+    title: product?.content?.title ?? productId,
+    image: card ? `/api/admin/media/${card.id}` : "",
+    category: product?.content?.kind ?? "Asset",
+  };
 }
