@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  antiCheatResearch,
   countdown,
   divineHarvest,
   pageMeta,
@@ -17,10 +18,15 @@ import { formatCurrency, formatPromotionEnd, getProductLabels, getProductPricing
 const publicOrigin = "https://ballai.dev";
 const commerceApiOrigin = "https://api.ballai.dev";
 
+function assetPath(path) {
+  return path?.startsWith("assets/") ? `/${path}` : path;
+}
+
 function pathForPage(pageId) {
   if (pageId === "home") return "/";
   if (pageId === "divine-harvest") return "/projects/divine-harvest";
   if (pageId === "countdown") return "/projects/seconds-thief";
+  if (pageId === "ai-anticheat") return "/projects/ai-anticheat";
   return `/${pageId}`;
 }
 
@@ -29,6 +35,7 @@ function pageIdForPath(pathname) {
   if (path === "/") return "home";
   if (path === "/projects/divine-harvest") return "divine-harvest";
   if (path === "/projects/seconds-thief") return "countdown";
+  if (path === "/projects/ai-anticheat") return "ai-anticheat";
   if (path === "/store") return "store";
   if (path.startsWith("/store/")) return `store/${path.slice("/store/".length)}`;
   const pageId = path.slice(1);
@@ -315,7 +322,7 @@ function Store({ items }) {
               {items.map((item) => (
                 <article className={`store-card ${item.category} ${item.kind === "Unity Asset" ? "unity-asset" : ""}`} key={item.title}>
                   <InternalLink className="store-art" pageId={item.pageId} aria-label={`Open ${item.title}`}>
-                    <img src={item.image} alt={item.imageAlt} loading="lazy" />
+                    <img src={assetPath(item.image)} alt={item.imageAlt} loading="lazy" />
                   </InternalLink>
                   <div className="store-copy">
                     <div>
@@ -385,7 +392,7 @@ function AssetMediaGallery({ product }) {
         {selectedMedia.type === "video" ? (
           <VideoFrame title={`${product.title} product demonstration`} videoId={selectedMedia.videoId} />
         ) : (
-          <img src={selectedMedia.src} alt={selectedMedia.alt} loading={selectedIndex === 0 ? "eager" : "lazy"} />
+          <img src={assetPath(selectedMedia.src)} alt={selectedMedia.alt} loading={selectedIndex === 0 ? "eager" : "lazy"} />
         )}
       </div>
       {media.length > 1 ? (
@@ -399,7 +406,7 @@ function AssetMediaGallery({ product }) {
               onClick={() => setSelectedIndex(index)}
               type="button"
             >
-              <img src={item.type === "video" ? item.thumbnail : item.src} alt="" loading="lazy" />
+              <img src={assetPath(item.type === "video" ? item.thumbnail : item.src)} alt="" loading="lazy" />
               <span>{item.label}</span>
             </button>
           ))}
@@ -499,7 +506,7 @@ function ProductPage({ product }) {
           </div>
 
           <aside className="asset-product-summary">
-            <img className="asset-product-logo" src={product.image} alt={product.imageAlt} />
+            <img className="asset-product-logo" src={assetPath(product.image)} alt={product.imageAlt} />
             <div>
               <h1>{product.title}</h1>
               <p className="asset-product-kind">{product.kind}</p>
@@ -570,17 +577,22 @@ function Projects() {
         </div>
         <div className="project-grid">
           {projects.map((project) => (
-            <article className={`project-card ${project.accent}`} key={project.id}>
+            <article className={`project-card ${project.accent} ${project.featured ? "featured" : ""}`} key={project.id}>
               <div className="project-graphic">
-                <img src={project.image} alt={project.imageAlt} loading="lazy" />
+                <img
+                  src={assetPath(project.image)}
+                  alt={project.imageAlt}
+                  loading={project.featured ? "eager" : "lazy"}
+                  fetchPriority={project.featured ? "high" : undefined}
+                />
               </div>
               <div className="project-copy">
                 <p className="project-type">{project.type}</p>
                 <h2>{project.name}</h2>
                 <p>{project.summary}</p>
-                {["divine-harvest", "countdown"].includes(project.id) && (
+                {["divine-harvest", "countdown", "ai-anticheat"].includes(project.id) && (
                   <InternalLink className="inline-link" pageId={project.id}>
-                    Game page
+                    {project.id === "ai-anticheat" ? "Research page" : "Game page"}
                   </InternalLink>
                 )}
               </div>
@@ -588,6 +600,108 @@ function Projects() {
           ))}
         </div>
       </section>
+    </main>
+  );
+}
+
+function AntiCheatPage() {
+  const research = antiCheatResearch;
+
+  return (
+    <main className="research-page">
+      <article>
+        <header className="research-hero">
+          <div className="research-banner">
+            <img src={assetPath(research.banner)} alt={research.bannerAlt} fetchPriority="high" />
+          </div>
+          <div className="research-hero-copy">
+            <p className="project-type">Ongoing independent research</p>
+            <h1>{research.title}</h1>
+            <p className="research-positioning">Behavior-first analysis. Human review always.</p>
+            <p className="lead">{research.lead}</p>
+          </div>
+        </header>
+
+        <section className="research-principle" aria-labelledby="research-principle-title">
+          <h2 id="research-principle-title">The operating principle</h2>
+          <p>{research.principle}</p>
+        </section>
+
+        <section className="research-section" aria-labelledby="research-workflow-title">
+          <div className="research-heading">
+            <h2 id="research-workflow-title">From demo to review</h2>
+            <p>The workflow keeps raw observations, learned scores, and human interpretation separate.</p>
+          </div>
+          <ol className="research-pipeline">
+            {research.workflow.map((stage) => (
+              <li key={stage.title}>
+                <h3>{stage.title}</h3>
+                <p>{stage.text}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="research-section" aria-labelledby="research-results-title">
+          <div className="research-heading">
+            <h2 id="research-results-title">What the current experiments show</h2>
+            <p>Measured results are useful as research-ranking evidence, not as proof of cheating.</p>
+          </div>
+          <dl className="research-metrics">
+            {research.metrics.map(([value, label]) => (
+              <div key={label}>
+                <dd>{value}</dd>
+                <dt>{label}</dt>
+              </div>
+            ))}
+          </dl>
+          <div className="research-figures">
+            <figure>
+              <img
+                src="/assets/ai-anticheat-m5-pr-curves.webp"
+                alt="Precision recall curves comparing the TCN512 and GRU512 M5 temporal models across ten folds"
+                loading="lazy"
+              />
+              <figcaption>Ten-fold M5 precision-recall audit. TCN512 leads the current temporal comparison.</figcaption>
+            </figure>
+            <figure>
+              <img
+                src="/assets/ai-anticheat-controlled-timeline.webp"
+                alt="Controlled Dust2 session timeline showing shots, damage, kills, and the instrumented multi-assistance interval"
+                loading="lazy"
+              />
+              <figcaption>Identifier-free controlled-session timeline used to align instrumentation with demo events.</figcaption>
+            </figure>
+          </div>
+          <div className="research-findings">
+            {research.findings.map((finding) => (
+              <p key={finding}>{finding}</p>
+            ))}
+          </div>
+        </section>
+
+        <section className="research-boundary" aria-labelledby="research-boundary-title">
+          <div>
+            <h2 id="research-boundary-title">What the results do not prove</h2>
+            <p>These limits are part of the research result, not footnotes to it.</p>
+          </div>
+          <ul>
+            {research.limitations.map((limitation) => (
+              <li key={limitation}>{limitation}</li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="research-next" aria-labelledby="research-next-title">
+          <h2 id="research-next-title">Next validation gate</h2>
+          <ul>
+            {research.next.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <InternalLink className="secondary-action" pageId="projects">Back to projects</InternalLink>
+        </section>
+      </article>
     </main>
   );
 }
@@ -633,14 +747,14 @@ function MediaCarousel({ game }) {
         </figure>
         {game.screenshots.map((shot) => (
           <figure className="media-slide" key={shot.src}>
-            <img src={shot.src} alt={shot.alt} loading="lazy" />
+            <img src={assetPath(shot.src)} alt={shot.alt} loading="lazy" />
           </figure>
         ))}
       </div>
       <div className="media-dots" aria-label="Media shortcuts">
         {slides.map((slide, index) => (
           <button key={slide.label} onClick={() => moveToSlide(index)} type="button" aria-label={`Show ${slide.label}`}>
-            <img src={slide.src} alt="" loading="lazy" />
+            <img src={assetPath(slide.src)} alt="" loading="lazy" />
             {index === 0 && <span>Trailer</span>}
           </button>
         ))}
@@ -674,7 +788,7 @@ function GamePage({ game }) {
 
           <aside className="game-detail-summary">
             <div className="game-logo-panel">
-              <img src={game.logo} alt={game.logoAlt} />
+              <img src={assetPath(game.logo)} alt={game.logoAlt} />
             </div>
             <p className="game-kicker">{game.kicker}</p>
             <h1>{game.title}</h1>
@@ -826,7 +940,7 @@ function About() {
             <a href="https://www.freecodecamp.org/certification/ballai/front-end-development-libraries-v9" rel="noopener" target="_blank">
               <img
                 alt="freeCodeCamp Front-End Development Libraries Developer Certification awarded to Ballai on August 27, 2026"
-                src="assets/certificate-freecodecamp-frontend.webp"
+                src="/assets/certificate-freecodecamp-frontend.webp"
               />
             </a>
             <div className="certification-copy">
@@ -878,19 +992,19 @@ function Footer() {
         </div>
         <nav className="footer-links" aria-label="Footer links">
           <InternalLink aria-label="Store" pageId="store" title="Store">
-            <img alt="" src="assets/icon-store.svg" />
+            <img alt="" src="/assets/icon-store.svg" />
           </InternalLink>
           <InternalLink aria-label="Projects" pageId="projects" title="Projects">
-            <img alt="" src="assets/icon-projects.png" />
+            <img alt="" src="/assets/icon-projects.png" />
           </InternalLink>
           <a aria-label="itch.io" href="https://ballaii.itch.io" rel="noopener" target="_blank" title="itch.io">
-            <img alt="" src="assets/icon-itch.svg" />
+            <img alt="" src="/assets/icon-itch.svg" />
           </a>
           <a aria-label="GitHub" href="https://github.com/Ballaii" rel="noopener" target="_blank" title="GitHub">
-            <img alt="" src="assets/icon-github.svg" />
+            <img alt="" src="/assets/icon-github.svg" />
           </a>
           <a aria-label="Email" href="mailto:ballaifoktjeno@gmail.com" title="Email">
-            <img alt="" src="assets/icon-mail.svg" />
+            <img alt="" src="/assets/icon-mail.svg" />
           </a>
         </nav>
       </div>
@@ -914,6 +1028,7 @@ export default function App() {
         store: <Store items={commerceCatalog.storeItems} />,
         "divine-harvest": <GamePage game={divineHarvest} />,
         countdown: <GamePage game={countdown} />,
+        "ai-anticheat": <AntiCheatPage />,
         about: <About />,
         skills: <About />,
         contact: <Contact />,

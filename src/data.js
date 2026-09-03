@@ -8,7 +8,7 @@ export const pages = [
   { id: "contact", label: "Contact" },
 ];
 
-export const routeIds = [...pages.map((page) => page.id), "skills", "divine-harvest", "countdown", ...productRouteIds];
+export const routeIds = [...pages.map((page) => page.id), "skills", "divine-harvest", "countdown", "ai-anticheat", ...productRouteIds];
 
 export const pageMeta = {
   home: {
@@ -19,7 +19,7 @@ export const pageMeta = {
   projects: {
     title: "Projects | Ballai Fokt Jeno",
     description:
-      "Selected game development, automation, AI malware detection, Flutter, and OpenGL projects by Ballai Fokt Jeno.",
+      "Game development, behavior-based AI anti-cheat research, automation, Flutter, and OpenGL projects by Ballai Fokt Jeno.",
   },
   store: {
     title: "Ballai - Unity Tools & Game Assets",
@@ -35,6 +35,12 @@ export const pageMeta = {
     title: "Second's Thief | Ballai Fokt Jeno",
     description:
       "Second's Thief is an ongoing arena survivor based on reverse progression, time pressure, bosses, and leaderboard runs.",
+  },
+  "ai-anticheat": {
+    title: "AI Anti-Cheat Research for CS2 | Ballai Fokt Jeno",
+    description:
+      "An ongoing behavior-based AI anti-cheat research project that analyzes Counter-Strike 2 demos and ranks suspicious actions for human review.",
+    image: "https://ballai.dev/assets/project-ai-anticheat.webp",
   },
   about: {
     title: "About | Ballai Fokt Jeno",
@@ -80,6 +86,17 @@ export const storeItems = [
 ];
 
 export const projects = [
+  {
+    id: "ai-anticheat",
+    name: "AI Anti-Cheat Research",
+    type: "Featured ongoing research",
+    summary:
+      "A behavior-based CS2 demo analysis pipeline for ranking suspicious player-rounds and actions while keeping human review in control.",
+    accent: "anticheat",
+    featured: true,
+    image: "assets/project-ai-anticheat.webp",
+    imageAlt: "AI Anti-Cheat behavior-based detection research banner",
+  },
   {
     id: "divine-harvest",
     name: "Divine Harvest",
@@ -141,6 +158,57 @@ export const projects = [
     imageAlt: "OpenGL logo",
   },
 ];
+
+export const antiCheatResearch = {
+  title: "AI Anti-Cheat Research",
+  banner: "assets/project-ai-anticheat.webp",
+  bannerAlt: "AI Anti-Cheat behavior-based detection research banner",
+  lead:
+    "I analyze CS2 demos to rank suspicious behavior for human review, with false positives treated as the costliest error.",
+  principle:
+    "The system does not decide whether a player cheated. It preserves evidence, uncertainty, and model boundaries so a reviewer can inspect the situations that deserve attention.",
+  workflow: [
+    {
+      title: "Parse the demo",
+      text: "I extract pseudonymized player ticks, shots, damage, kills, view angles, movement, and round context from offline CS2 demos.",
+    },
+    {
+      title: "Build causal evidence",
+      text: "The pipeline constructs player-round, action-window, and temporal features while separating observable knowledge from outcome shortcuts.",
+    },
+    {
+      title: "Score separate channels",
+      text: "M2 ranks player-round context, M4 ranks kill windows, and M5 studies 512-tick temporal sequences. Their scores are never averaged blindly.",
+    },
+    {
+      title: "Review with provenance",
+      text: "Identifier-safe outputs keep model scores, deterministic evidence rules, technical conditions, and data-quality warnings visibly separate.",
+    },
+  ],
+  metrics: [
+    ["795", "source matches audited"],
+    ["734,975,247", "raw tick rows audited"],
+    ["0.8008", "M2 player-match PR-AUC"],
+    ["0.7477", "M5 TCN512 macro PR-AUC"],
+  ],
+  findings: [
+    "M2 v0.2 reached 0.9291 ROC-AUC and 0.8008 PR-AUC in source-match-grouped cross-validation against weak player-match labels.",
+    "TCN512 led the M5 temporal comparison in 8 of 10 folds, ahead of GRU512 by 0.0335 PR-AUC in the paired out-of-fold audit.",
+    "In one controlled multi-assistance session, M2 placed 13 of 15 target rounds above 0.5 and M4 placed 6 of 15 kill windows above 0.5. None crossed the conservative strict thresholds.",
+    "A controlled two-session comparison found shorter median linked reaction latency under assistance, but the sample is descriptive and cannot establish sensitivity or causality.",
+  ],
+  limitations: [
+    "Weak player-match labels do not identify which action or assistance type caused a score.",
+    "Current controlled sessions are too limited to estimate sensitivity or a real-world false-positive rate.",
+    "Several visibility, hitbox, smoke, and sound measurements still rely on documented proxies.",
+    "No current result is deployment-ready or suitable for automatic bans.",
+  ],
+  next: [
+    "Collect event-matched pre, active, and post intervals from additional untouched participants.",
+    "Add independent adjudication and calibration on a separate cohort.",
+    "Replace visibility proxies with stronger Source 2 geometry and occlusion measurements.",
+  ],
+};
 
 export const timeline = [
   {

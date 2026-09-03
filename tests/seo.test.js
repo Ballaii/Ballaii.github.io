@@ -17,6 +17,7 @@ test("static metadata uses real canonical paths", () => {
   assert.doesNotMatch(html, /https:\/\/ballai\.dev\/#/);
   assert.match(html, /https:\/\/ballai\.dev\/projects\/divine-harvest/);
   assert.match(html, /https:\/\/ballai\.dev\/projects\/seconds-thief/);
+  assert.match(html, /https:\/\/ballai\.dev\/projects\/ai-anticheat/);
 });
 
 test("edge router protects publication visibility and generates SEO endpoints", () => {
@@ -27,4 +28,5 @@ test("edge router protects publication visibility and generates SEO endpoints", 
   assert.match(router, /robots\.txt/);
   assert.match(router, /Response\.redirect/);
   assert.match(router, /escapeHtml/);
+  assert.match(router, /\/projects\/ai-anticheat/);
 });
