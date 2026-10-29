@@ -114,7 +114,7 @@ function useCommerceCatalog() {
     const dynamicProducts = remoteProducts ? Object.values(remoteProducts).filter((product) => !staticById[product.id]).map((product) => ({ ...mergeCommerceState({ id: product.id, slug: product.slug, imageAlt: product.title, gallery: [], platforms: {}, labels: [], features: [], technicalInfo: [], detailSections: [] }, product), pageId: `store/${product.slug}` })) : [];
     const mergedAssets = assetProducts.map((product) => mergeCommerceState(product, remoteProducts?.[product.id]));
     const games = storeItems.filter((item) => item.category === "games");
-    const visibleGames = remoteProducts ? games : [];
+    const visibleGames = games;
     const publicAssets = mergedAssets
       .filter((product) => product.visibility !== "hidden")
       .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
