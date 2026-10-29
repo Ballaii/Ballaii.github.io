@@ -464,6 +464,79 @@ h3 {
   transform: scale(1.035);
 }
 
+.project-card.legacy .project-graphic {
+  background:
+    radial-gradient(ellipse at 52% 112%, rgba(132, 38, 43, 0.5), transparent 64%),
+    radial-gradient(circle at 22% 10%, rgba(193, 162, 118, 0.12), transparent 58%),
+    linear-gradient(135deg, #17191c, #272327 55%, #0b1015);
+}
+
+.project-card.thief-3d .project-graphic {
+  background:
+    radial-gradient(ellipse at 75% 80%, rgba(225, 130, 59, 0.32), transparent 58%),
+    radial-gradient(circle at 14% 15%, rgba(201, 171, 110, 0.16), transparent 65%),
+    linear-gradient(135deg, #1f2426, #34271e 60%, #171513);
+}
+
+.project-graphic-upcoming {
+  isolation: isolate;
+  position: relative;
+}
+
+.project-graphic-upcoming::before {
+  content: "";
+  position: absolute;
+  inset: 22px;
+  border: 1px solid rgba(237, 225, 201, 0.14);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.upcoming-project-art {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 160px;
+  text-align: center;
+}
+
+.upcoming-project-mark {
+  color: #f4eee6;
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: 0.025em;
+  text-shadow: 0 3px 24px rgba(0, 0, 0, 0.55);
+}
+
+.upcoming-project-subtitle {
+  color: #e9bd87;
+  font-size: 0.83rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.project-card.legacy .upcoming-project-subtitle {
+  color: #ddaaa1;
+}
+
+.upcoming-project-status {
+  margin-top: 9px;
+  padding: 5px 12px;
+  border: 1px solid rgba(240, 224, 202, 0.32);
+  border-radius: 999px;
+  color: #f4e5d0;
+  background: rgba(0, 0, 0, 0.23);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
 .project-copy {
   display: flex;
   flex-direction: column;
