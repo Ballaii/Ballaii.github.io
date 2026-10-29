@@ -578,13 +578,21 @@ function Projects() {
         <div className="project-grid">
           {projects.map((project) => (
             <article className={`project-card ${project.accent} ${project.featured ? "featured" : ""}`} key={project.id}>
-              <div className="project-graphic">
-                <img
-                  src={assetPath(project.image)}
-                  alt={project.imageAlt}
-                  loading={project.featured ? "eager" : "lazy"}
-                  fetchPriority={project.featured ? "high" : undefined}
-                />
+              <div className={`project-graphic${project.upcoming ? " project-graphic-upcoming" : ""}`}>
+                {project.image ? (
+                  <img
+                    src={assetPath(project.image)}
+                    alt={project.imageAlt}
+                    loading={project.featured ? "eager" : "lazy"}
+                    fetchPriority={project.featured ? "high" : undefined}
+                  />
+                ) : (
+                  <div className="upcoming-project-art" role="img" aria-label={`${project.name} – upcoming game`}>
+                    <span className="upcoming-project-mark">{project.graphicTitle}</span>
+                    <span className="upcoming-project-subtitle">{project.graphicSubtitle}</span>
+                    <span className="upcoming-project-status">COMING SOON</span>
+                  </div>
+                )}
               </div>
               <div className="project-copy">
                 <p className="project-type">{project.type}</p>
@@ -815,8 +823,8 @@ function GamePage({ game }) {
 
         <section className="play-strip">
           <div>
-            <h2>{isCountdown ? "Second's Thief" : "Play Divine Harvest"}</h2>
-            <p>{isCountdown ? "Ongoing project, playable from the current itch.io build." : "Name your own price on itch.io."}</p>
+            <h2>{isCountdown ? "Second's Thief: GMTK Edition" : "Play Divine Harvest"}</h2>
+            <p>{isCountdown ? "Play the original GMTK 2026 game jam build on itch.io." : "Name your own price on itch.io."}</p>
           </div>
           <div className="play-actions">
             <span>{game.actionMeta}</span>
