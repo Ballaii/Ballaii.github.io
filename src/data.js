@@ -32,9 +32,9 @@ export const pageMeta = {
       "Divine Harvest is a released Unity Metroidvania with exploration, boss fights, branching endings, and at least 2 hours of content.",
   },
   countdown: {
-    title: "Second's Thief | Ballai Fokt Jeno",
+    title: "Second's Thief: GMTK Edition | Ballai Fokt Jeno",
     description:
-      "Second's Thief is an ongoing arena survivor based on reverse progression, time pressure, bosses, and leaderboard runs.",
+      "Play the original 2D GMTK Game Jam 2026 prototype, distinct from the upcoming 3D Second's Thief.",
   },
   "ai-anticheat": {
     title: "AI Anti-Cheat Research for CS2 | Ballai Fokt Jeno",
@@ -72,14 +72,14 @@ export const storeItems = [
     pageId: "divine-harvest",
   },
   {
-    title: "Second's Thief",
+    title: "Second's Thief: GMTK Edition",
     category: "games",
-    kind: "Ongoing game",
-    price: "Playable build",
+    kind: "GMTK 2026 prototype",
+    price: "Playable jam build",
     image: "assets/countdown-cover.webp",
-    imageAlt: "Second's Thief cover",
-    text: "An arena survivor about starting strong, losing power, and stealing enough time to keep the run alive.",
-    tags: ["Browser", "Windows", "Linux"],
+    imageAlt: "Second's Thief: GMTK Edition cover",
+    text: "The original playable 2D GMTK Game Jam prototype: start powerful, lose abilities, and race against time.",
+    tags: ["GMTK 2026", "Browser", "Windows", "Linux"],
     pageId: "countdown",
   },
   ...storeCatalogItems,
@@ -108,14 +108,36 @@ export const projects = [
     imageAlt: "Divine Harvest game logo",
   },
   {
-    id: "countdown",
-    name: "Second's Thief",
-    type: "Ongoing game project",
+    id: "divine-harvest-legacy",
+    name: "Divine Harvest: Legacy",
+    type: "Upcoming action-adventure game",
     summary:
-      "A GMTK prototype growing into a sharper arena survivor about losing power while fighting for more time.",
+      "Return to Ephebor as Sevris in a standalone follow-up: a free land faces the invading Covenant and a new generation of powerful enemies.",
+    accent: "legacy",
+    upcoming: true,
+    graphicTitle: "DIVINE HARVEST",
+    graphicSubtitle: "LEGACY",
+  },
+  {
+    id: "seconds-thief-3d",
+    name: "Second's Thief",
+    type: "Upcoming 3D isometric action game",
+    summary:
+      "A new frontier action adventure starring Rook Morrow, with gun-and-sword combat, contracts, and a race against the clock. Separate from the GMTK prototype.",
+    accent: "thief-3d",
+    upcoming: true,
+    graphicTitle: "SECOND'S THIEF",
+    graphicSubtitle: "THE NEW 3D GAME",
+  },
+  {
+    id: "countdown",
+    name: "Second's Thief: GMTK Edition",
+    type: "Playable GMTK 2026 prototype",
+    summary:
+      "The original 2D game jam build: start with a full arsenal, lose abilities as you progress, and fight for more time.",
     accent: "countdown",
     image: "assets/countdown-cover.webp",
-    imageAlt: "Second's Thief game cover",
+    imageAlt: "Second's Thief: GMTK Edition game cover",
   },
   {
     id: "malware-ai",
@@ -351,22 +373,22 @@ export const divineHarvest = {
 export const countdown = {
   id: "countdown",
   theme: "countdown-theme",
-  title: "Second's Thief",
-  kicker: "Ongoing arena survivor",
+  title: "Second's Thief: GMTK Edition",
+  kicker: "GMTK 2026 game jam prototype",
   trailer: "HKM7NeKsCu8",
   logo: "assets/countdown-cover.webp",
-  logoAlt: "Second's Thief cover",
+  logoAlt: "Second's Thief: GMTK Edition cover",
   actionLabel: "Play now",
   actionUrl: "https://ballaii.itch.io/countdown",
-  actionMeta: "In development",
+  actionMeta: "Playable GMTK 2026 build",
   lead:
     "Start powerful, lose power as the run escalates, and fight to buy back enough time to stay alive.",
   shortDescription:
-    "An ongoing arena survivor where every run pushes you toward losing power instead of gaining it.",
+    "The original 2D GMTK Game Jam build, where your abilities diminish as you fight to stay alive.",
   about:
-    "Second's Thief evolves the GMTK prototype into a sharper arena-survivor project. Kills and XP do not simply make you stronger: they push the run toward level-down events, stripping comfort away while waves and bosses keep pressuring the arena. The hook is direct: survive while your build counts down.",
+    "Second's Thief: GMTK Edition is the original playable 2D prototype made for GMTK Game Jam 2026. Its reverse-progression loop takes away power as the arena becomes more dangerous. A separate, expanded 3D isometric game titled Second's Thief is now in development.",
   meta: [
-    ["Status", "In development"],
+    ["Status", "Playable prototype"],
     ["Developer", "Ballai Fokt Jeno"],
     ["Platforms", "Browser, Windows, Linux"],
     ["Origin", "GMTK Game Jam 2026"],
@@ -374,18 +396,18 @@ export const countdown = {
   tags: ["Arena Shooter", "Bullet Hell", "Roguelike", "Leaderboard", "Pixel Art", "Singleplayer"],
   features: [
     "Start powerful, then lose tiers, tools, and comfort as the run counts down.",
-    "Survive waves and bosses in an isometric arena shooter format.",
+    "Survive waves and bosses in the original 2D jam arena.",
     "Draft builds with contracts, boons, curses, time orbs, and XP refunds.",
     "Set your name, chase the leaderboard, and compete for survival time.",
   ],
   screenshots: [
-    { src: "assets/countdown-01.webp", alt: "Second's Thief gameplay screenshot showing arena action" },
-    { src: "assets/countdown-02.webp", alt: "Second's Thief screenshot with player, enemies, and arena effects" },
-    { src: "assets/countdown-03.webp", alt: "Second's Thief screenshot showing combat and interface" },
-    { src: "assets/countdown-04.webp", alt: "Second's Thief screenshot showing another arena encounter" },
+    { src: "assets/countdown-01.webp", alt: "Second's Thief: GMTK Edition gameplay screenshot showing arena action" },
+    { src: "assets/countdown-02.webp", alt: "Second's Thief: GMTK Edition screenshot with player, enemies, and arena effects" },
+    { src: "assets/countdown-03.webp", alt: "Second's Thief: GMTK Edition screenshot showing combat and interface" },
+    { src: "assets/countdown-04.webp", alt: "Second's Thief: GMTK Edition screenshot showing another arena encounter" },
   ],
   technicalIntro:
-    "Second's Thief is designed around a reverse-progression run loop: kills and XP push the player toward level-down events instead of upgrades. The systems that matter most are run state, ability tier stripping, time pickups, refunds, draft choices, leaderboard naming, and wave/boss pacing.",
+    "Second's Thief: GMTK Edition is designed around a reverse-progression run loop: kills and XP push the player toward level-down events instead of upgrades. The systems that matter most are run state, ability tier stripping, time pickups, refunds, draft choices, leaderboard naming, and wave/boss pacing.",
   systems: [
     {
       title: "Reverse Progression",
