@@ -122,7 +122,7 @@ function notFound(): Response {
 
 async function sitemap(env: Env): Promise<Response> {
   const products = await publicProducts(env);
-  const staticPaths = ["/", "/projects", "/projects/divine-harvest", "/projects/seconds-thief", "/projects/ai-anticheat", "/store", "/about", "/contact"];
+  const staticPaths = ["/", "/projects", "/projects/divine-harvest", "/projects/countdown", "/projects/ai-anticheat", "/store", "/about", "/contact"];
   const urls = [...staticPaths.map((path) => `  <url><loc>${publicOrigin}${path}</loc></url>`), ...products.map((product) => `  <url><loc>${publicOrigin}/store/${encodeURIComponent(product.slug)}</loc><lastmod>${escapeXml(new Date(product.updated_at).toISOString())}</lastmod></url>`)];
   return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=60, must-revalidate" } });
 }
@@ -147,12 +147,12 @@ export default {
       return await htmlResponse(request, env, { title: meta.title.includes("|") ? meta.title : `${meta.title} | Ballai`, description: meta.description, url: `${publicOrigin}/store/${encodeURIComponent(meta.slug)}`, image: meta.image });
     }
     const pageMeta: Record<string, { title: string; description: string; url: string; image?: string }> = {
-      "/projects": { title: "Projects | Ballai Fokt Jeno", description: "Game development, AI anti-cheat research, automation, AI malware detection, Flutter, and OpenGL projects by Ballai Fokt Jeno.", url: `${publicOrigin}/projects` },
+      "/projects": { title: "Projects | Ballai Fokt Jeno", description: "Game development, AI anti-cheat research, predictive maintenance, automation, Flutter, and OpenGL projects by Ballai Fokt Jeno.", url: `${publicOrigin}/projects` },
       "/about": { title: "About | Ballai Fokt Jeno", description: "About Ballai Fokt Jeno, a game developer and software engineer building Unity games, tools, mobile apps, graphics projects, and applied AI systems.", url: `${publicOrigin}/about` },
       "/skills": { title: "About | Ballai Fokt Jeno", description: "About Ballai Fokt Jeno and his game development, software engineering, and frontend certifications.", url: `${publicOrigin}/skills` },
       "/contact": { title: "Contact | Ballai Fokt Jeno", description: "Contact Ballai Fokt Jeno for game development, software engineering, web, automation, and AI security work.", url: `${publicOrigin}/contact` },
       "/projects/divine-harvest": { title: "Divine Harvest | Ballai Fokt Jeno", description: "Divine Harvest is a released Unity Metroidvania with at least 2 hours of content.", url: `${publicOrigin}/projects/divine-harvest` },
-      "/projects/seconds-thief": { title: "Second's Thief: GMTK Edition | Ballai Fokt Jeno", description: "Play the original 2D GMTK Game Jam 2026 prototype, distinct from the upcoming 3D Second's Thief.", url: `${publicOrigin}/projects/seconds-thief` },
+      "/projects/countdown": { title: "CountDown | Ballai Fokt Jeno", description: "CountDown is a four-day GMTK 2026 arena survivor based on reverse progression and time pressure.", url: `${publicOrigin}/projects/countdown` },
       "/projects/ai-anticheat": { title: "AI Anti-Cheat Research for CS2 | Ballai Fokt Jeno", description: "An ongoing behavior-based AI anti-cheat research project that analyzes Counter-Strike 2 demos and ranks suspicious actions for human review.", url: `${publicOrigin}/projects/ai-anticheat`, image: `${publicOrigin}/assets/project-ai-anticheat.webp` },
     };
     if (pageMeta[path]) return await htmlResponse(request, env, { ...pageMeta[path], image: pageMeta[path].image ?? `${publicOrigin}/assets/project-divine-harvest.webp` });

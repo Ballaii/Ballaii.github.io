@@ -25,7 +25,7 @@ function assetPath(path) {
 function pathForPage(pageId) {
   if (pageId === "home") return "/";
   if (pageId === "divine-harvest") return "/projects/divine-harvest";
-  if (pageId === "countdown") return "/projects/seconds-thief";
+  if (pageId === "countdown") return "/projects/countdown";
   if (pageId === "ai-anticheat") return "/projects/ai-anticheat";
   return `/${pageId}`;
 }
@@ -34,7 +34,7 @@ function pageIdForPath(pathname) {
   const path = decodeURIComponent(pathname.replace(/\/+$/, "") || "/");
   if (path === "/") return "home";
   if (path === "/projects/divine-harvest") return "divine-harvest";
-  if (path === "/projects/seconds-thief") return "countdown";
+  if (path === "/projects/countdown") return "countdown";
   if (path === "/projects/ai-anticheat") return "ai-anticheat";
   if (path === "/store") return "store";
   if (path.startsWith("/store/")) return `store/${path.slice("/store/".length)}`;
@@ -603,6 +603,11 @@ function Projects() {
                     {project.id === "ai-anticheat" ? "Research page" : "Game page"}
                   </InternalLink>
                 )}
+                {project.href && (
+                  <a className="inline-link" href={project.href} rel="noopener" target="_blank">
+                    {project.linkLabel}
+                  </a>
+                )}
               </div>
             </article>
           ))}
@@ -823,8 +828,8 @@ function GamePage({ game }) {
 
         <section className="play-strip">
           <div>
-            <h2>{isCountdown ? "Second's Thief: GMTK Edition" : "Play Divine Harvest"}</h2>
-            <p>{isCountdown ? "Play the original GMTK 2026 game jam build on itch.io." : "Name your own price on itch.io."}</p>
+            <h2>{isCountdown ? "CountDown" : "Play Divine Harvest"}</h2>
+            <p>{isCountdown ? "Four-day GMTK 2026 project, playable on itch.io." : "Name your own price on itch.io."}</p>
           </div>
           <div className="play-actions">
             <span>{game.actionMeta}</span>

@@ -17,8 +17,9 @@ test("public navigation uses pathname history and crawlable links", () => {
 test("static metadata uses real canonical paths", () => {
   assert.doesNotMatch(html, /https:\/\/ballai\.dev\/#/);
   assert.match(html, /https:\/\/ballai\.dev\/projects\/divine-harvest/);
-  assert.match(html, /https:\/\/ballai\.dev\/projects\/seconds-thief/);
+  assert.match(html, /https:\/\/ballai\.dev\/projects\/countdown/);
   assert.match(html, /https:\/\/ballai\.dev\/projects\/ai-anticheat/);
+  assert.match(html, /https:\/\/github\.com\/Ballaii\/predictive-maintenance-control-center/);
 });
 
 test("edge router protects publication visibility and generates SEO endpoints", () => {
@@ -32,12 +33,13 @@ test("edge router protects publication visibility and generates SEO endpoints", 
   assert.match(router, /\/projects\/ai-anticheat/);
 });
 
-test("portfolio separates the GMTK prototype from the upcoming games", () => {
-  assert.match(data, /name: "Second's Thief: GMTK Edition"/);
+test("portfolio separates CountDown from the upcoming games", () => {
+  assert.match(data, /name: "CountDown"/);
+  assert.match(data, /type: "4 day project"/);
   assert.match(data, /id: "divine-harvest-legacy"/);
   assert.match(data, /id: "seconds-thief-3d"/);
   assert.match(data, /name: "Second's Thief"/);
   assert.match(data, /upcoming: true/g);
-  assert.match(router, /Second's Thief: GMTK Edition/);
+  assert.match(router, /\/projects\/countdown/);
   assert.match(app, /upcoming-project-art/);
 });

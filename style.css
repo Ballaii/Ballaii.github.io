@@ -411,6 +411,16 @@ h3 {
   margin-top: 22px;
 }
 
+.project-card.predictive .project-graphic {
+  padding: 0;
+  background: var(--surface-2);
+}
+
+.project-card.predictive .project-graphic img {
+  max-height: none;
+  object-fit: cover;
+}
+
 .project-card:hover,
 .store-card:hover {
   transform: translateY(-4px);
