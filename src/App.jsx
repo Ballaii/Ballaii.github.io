@@ -580,12 +580,24 @@ function Projects() {
             <article className={`project-card ${project.accent} ${project.featured ? "featured" : ""}`} key={project.id}>
               <div className={`project-graphic${project.upcoming ? " project-graphic-upcoming" : ""}`}>
                 {project.image ? (
-                  <img
-                    src={assetPath(project.image)}
-                    alt={project.imageAlt}
-                    loading={project.featured ? "eager" : "lazy"}
-                    fetchPriority={project.featured ? "high" : undefined}
-                  />
+                  project.upcoming ? (
+                    <div className="upcoming-project-art upcoming-project-art--image">
+                      <img
+                        src={assetPath(project.image)}
+                        alt={project.imageAlt}
+                        loading={project.featured ? "eager" : "lazy"}
+                        fetchPriority={project.featured ? "high" : undefined}
+                      />
+                      <span className="upcoming-project-status">COMING SOON</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={assetPath(project.image)}
+                      alt={project.imageAlt}
+                      loading={project.featured ? "eager" : "lazy"}
+                      fetchPriority={project.featured ? "high" : undefined}
+                    />
+                  )
                 ) : (
                   <div className="upcoming-project-art" role="img" aria-label={`${project.name} – upcoming game`}>
                     <span className="upcoming-project-mark">{project.graphicTitle}</span>
