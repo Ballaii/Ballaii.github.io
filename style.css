@@ -531,8 +531,21 @@ h3 {
   letter-spacing: 0.2em;
 }
 
-.project-card.legacy .upcoming-project-subtitle {
-  color: #ddaaa1;
+.upcoming-project-art--image {
+  height: 100%;
+  min-height: 0;
+  gap: 4px;
+}
+
+.upcoming-project-art--image img {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+.upcoming-project-art--image .upcoming-project-status {
+  flex: none;
+  margin: 0 0 8px;
 }
 
 .upcoming-project-status {

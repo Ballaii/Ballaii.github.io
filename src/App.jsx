@@ -579,7 +579,12 @@ function Projects() {
           {projects.map((project) => (
             <article className={`project-card ${project.accent} ${project.featured ? "featured" : ""}`} key={project.id}>
               <div className={`project-graphic${project.upcoming ? " project-graphic-upcoming" : ""}`}>
-                {project.image ? (
+                {project.upcoming && project.image ? (
+                  <div className="upcoming-project-art upcoming-project-art--image">
+                    <img src={assetPath(project.image)} alt={project.imageAlt} loading="lazy" />
+                    <span className="upcoming-project-status">COMING SOON</span>
+                  </div>
+                ) : project.image ? (
                   <img
                     src={assetPath(project.image)}
                     alt={project.imageAlt}

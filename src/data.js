@@ -115,8 +115,8 @@ export const projects = [
       "Return to Ephebor as Sevris in a standalone follow-up: a free land faces the invading Covenant and a new generation of powerful enemies.",
     accent: "legacy",
     upcoming: true,
-    graphicTitle: "DIVINE HARVEST",
-    graphicSubtitle: "LEGACY",
+    image: "assets/divine-harvest-legacy.webp",
+    imageAlt: "Divine Harvest: Legacy logo with an ornate purple scythe",
   },
   {
     id: "seconds-thief-3d",
